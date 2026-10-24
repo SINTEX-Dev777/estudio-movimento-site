@@ -1,8 +1,9 @@
-# Estúdio Movimento — site de catálogos (vídeos e fotos) + Loja Dry Fit
+# Julian Carlos — vídeos e fotos com IA + Loja Dry Fit
 
 Site "dois em um":
-- **Produção de conteúdo:** abas **Catálogos**, **Fotos** e **Vídeos** (pacotes de vídeo/foto com modelos).
-- **Loja Dry Fit:** camisas e shorts com fotos, vídeo, explicação, cor, tamanho e pedido pelo WhatsApp.
+- **Vídeos e fotos com IA:** abas **Catálogo IA**, **Fotos** e **Vídeos**. O cliente escolhe **quantos vídeos e quantas fotos** quer,
+  o formato de cada um, e vê o preço na hora (com desconto por quantidade).
+- **Loja Dry Fit (loja pessoal):** camisas e shorts com fotos, vídeo, explicação, cor, tamanho e pedido pelo WhatsApp.
 - **Instalável no celular** (Android e iPhone) e abre mesmo sem internet (menos os vídeos).
 
 Hospedagem: **Cloudflare Pages** (grátis), ligada a este repositório do **GitHub**.
@@ -18,6 +19,7 @@ css/estilo.css          visual (cores e fontes no topo do arquivo)
 js/app.js               funcionamento (não precisa mexer)
 dados/catalogo.json     >>> TODO O CONTEÚDO DO SITE FICA AQUI <<<
 imagens/                fotos dos produtos, pacotes e galeria
+videos/                 vídeos próprios (.mp4) e capas (.jpg)
 icones/                 ícone do app e do navegador
 manifest.webmanifest    configuração do app instalável
 sw.js                   modo offline do app
@@ -40,9 +42,9 @@ _headers                segurança e cache (Cloudflare)
 ### Dados da loja (topo do arquivo)
 | Campo | Exemplo | Observação |
 |---|---|---|
-| `nome` | `"Estúdio Movimento"` | aparece no topo e no WhatsApp |
+| `nome` | `"Julian Carlos"` | aparece no topo e no WhatsApp |
 | `whatsapp` | `"5511999999999"` | 55 + DDD + número, só números |
-| `instagram` | `"estudiomovimento"` | sem @ |
+| `instagram` | `"juliancarlos"` | sem @ |
 | `demonstracao` | `true` | mude para `false` para tirar a faixa "Modo demonstração" |
 
 ### Adicionar um produto (Loja Dry Fit)
@@ -63,24 +65,46 @@ Copie um produto inteiro (de `{` até `}`), cole depois dele com uma vírgula e 
 Dicas: JPG ou WebP, até ~1600 px de largura e menos de 500 KB cada (carrega rápido no celular).
 Limite do Cloudflare Pages: 25 MB por arquivo. Nomes sem espaço e sem acento.
 
-### Adicionar vídeos (YouTube não listado)
+### Adicionar vídeos próprios (.mp4) — mais simples
+1. Exporte o vídeo em MP4 (H.264), de preferência com menos de 10 MB (limite do Cloudflare Pages: 25 MB por arquivo).
+2. No GitHub, envie para a pasta `videos` (Add file → Upload files), junto com uma imagem de capa `.jpg`.
+3. No `catalogo.json`: `"video": "videos/nome.mp4"` e `"capa": "videos/nome.jpg"` (na aba Vídeos)
+   ou `"videoCapa"` (em produtos e serviços).
+
+> Os 4 vídeos de jeans atuais são **animações de teste** (ilustração), só para ver o site funcionando.
+> Troque pelos vídeos reais feitos com IA.
+
+### Adicionar vídeos do YouTube (não listado) — para vídeos grandes
 1. No YouTube, envie o vídeo e escolha visibilidade **Não listado** (só quem tem o link vê).
 2. Copie o link (`Compartilhar → Copiar`). Serve `youtu.be/...`, `youtube.com/watch?v=...` ou `youtube.com/shorts/...`.
-3. Cole no campo `"youtube"` (aba Vídeos) ou `"video"` (produto/pacote).
+3. Cole no campo `"video"` (aba Vídeos, produto ou serviço).
 4. `"formato": "vertical"` (Reels/Shorts) ou `"horizontal"`. Links de Shorts já viram vertical sozinhos.
 
 Sem link, aparece "Vídeo em breve". O vídeo só carrega quando a pessoa toca (site rápido e sem cookies do YouTube antes).
 
-### Catálogos (pacotes de vídeo e foto)
-Mesmo esquema: `nome`, `categoria` (Vídeo, Foto, Combo...), `resumo`, `descricao`, `inclui` (lista),
-`preco` (`null` = "Sob consulta"), `fotos` e `video`.
+### Catálogo IA (vídeos e fotos vendidos por quantidade)
+Cada serviço em `catalogos` tem:
+- `nome`, `categoria` (Vídeos, Fotos, Pacotes...), `resumo`, `descricao`, `inclui` (lista).
+- `unidade` / `unidadePlural`: ex. `"vídeo"` / `"vídeos"` (aparece em "10 vídeos = R$ ...").
+- `preco`: preço de **cada** unidade (`null` = valor combinado no atendimento).
+- `faixas`: desconto por quantidade. Ex.: `{ "aPartirDe": 10, "preco": 39.90 }` = com 10 ou mais, cada um sai por R$ 39,90.
+  O desconto soma todas as linhas do mesmo serviço no pedido (ex.: 5 verticais + 5 quadrados = 10).
+- `quantidades`: botões de atalho (ex.: `[1, 3, 5, 10, 20]`). O cliente também pode digitar qualquer número.
+- `opcoes`: escolha de formato (ex.: Vertical 9:16, Quadrado 1:1). Use `null` para não ter escolha.
+- `fotos`, `video`, `videoCapa`, `videoFormato` (`"vertical"` ou `"horizontal"`).
+
+### Textos do topo e "Como funciona"
+Ficam em `textos` (no `catalogo.json`): título, destaque em verde, passos do "Como funciona" e o aviso sobre IA.
 
 ---
 
 ## Como o pedido funciona
-O cliente monta o pedido (peças + pacotes), digita o nome e toca em **Enviar pedido pelo WhatsApp**.
-Abre o WhatsApp da loja com a mensagem pronta: itens, cor, tamanho, quantidade, total e frete "a combinar".
+O cliente escolhe quantos vídeos/fotos (e/ou peças da loja), digita o nome e toca em **Enviar pedido pelo WhatsApp**.
+Abre o WhatsApp com a mensagem pronta: quantidades, formatos, preço de cada um, subtotais, total e frete "a combinar" (só da loja).
 O pedido fica salvo no aparelho do cliente até ele limpar.
+
+## Zoom
+O zoom com dois dedos e o duplo toque estão desligados de propósito (site se comporta como app).
 
 ## Instalar no celular
 - **Android (Chrome):** aparece o aviso "Instale o app" ou o botão ⬇ no topo.

@@ -1,100 +1,304 @@
 {
   "loja": {
-    "nome": "Estúdio Movimento",
-    "slogan": "Vídeos e fotos que vendem roupa + loja Dry Fit",
-    "descricao": "Produzimos vídeos e fotos com modelos para marcas de roupa mostrarem caimento, tecido e elasticidade de verdade. E vendemos camisas e shorts Dry Fit para treino e dia a dia.",
+    "nome": "Julian Carlos",
+    "slogan": "Vídeos e fotos com IA para lojas de roupa",
+    "descricao": "Crio vídeos e fotos com modelos de inteligência artificial vestindo as roupas da sua loja, prontos para anúncios, Reels, TikTok e catálogo. Você escolhe quantos quer.",
     "whatsapp": "5511999999999",
-    "instagram": "estudiomovimento",
+    "instagram": "juliancarlos",
     "email": "contato@exemplo.com.br",
-    "cidade": "São Paulo - SP",
+    "cidade": "Boqueirão - PB · atendimento online para todo o Brasil",
     "atendimento": "Segunda a sábado, das 9h às 18h",
     "demonstracao": true
   },
-
+  "textos": {
+    "heroSobretitulo": "Vídeos e fotos com inteligência artificial",
+    "heroTitulo": "Sua roupa vestida por",
+    "heroDestaque": "modelos de IA",
+    "comoFunciona": [
+      {
+        "titulo": "Escolha quantos quer",
+        "texto": "Monte o pedido aqui no site: quantidade de vídeos e fotos, formato e preço na hora."
+      },
+      {
+        "titulo": "Envie as fotos das peças",
+        "texto": "Pelo WhatsApp, mande fotos simples das roupas da sua loja (frente e costas)."
+      },
+      {
+        "titulo": "Receba pronto para anunciar",
+        "texto": "Vídeos e fotos com modelos de IA vestindo as suas peças, no formato de cada rede."
+      }
+    ],
+    "avisoIA": "Os modelos são criados por inteligência artificial. As roupas são as da sua loja."
+  },
   "catalogos": [
     {
-      "id": "video-produto",
-      "nome": "Vídeo de Produto",
-      "categoria": "Vídeo",
-      "resumo": "Vídeos curtos e verticais mostrando cada detalhe da peça: tecido, costura, caimento e elasticidade.",
-      "descricao": "Ideal para Reels, TikTok, Status do WhatsApp e páginas de produto. Filmamos a peça em close, com movimento e luz de estúdio, para o cliente sentir o tecido pela tela. Mostramos a lycra esticando, o acabamento da costura e o caimento no corpo.",
-      "inclui": ["3 vídeos verticais de 15 a 30 segundos", "Close de tecido, costura e elasticidade", "Edição com trilha sonora livre de direitos", "Entrega em até 5 dias úteis"],
-      "preco": null,
-      "fotos": ["imagens/servico-video-produto.svg", "imagens/galeria-detalhe-1.svg", "imagens/galeria-detalhe-2.svg"],
-      "video": ""
+      "id": "video-ia",
+      "nome": "Vídeo com modelo de IA",
+      "categoria": "Vídeos",
+      "unidade": "vídeo",
+      "unidadePlural": "vídeos",
+      "resumo": "Modelo de IA vestindo a sua peça em movimento: mostra caimento, tecido e detalhes. Ideal para anúncio e Reels.",
+      "descricao": "A partir das fotos da sua roupa, crio um vídeo curto com um modelo gerado por IA usando a peça, com movimento, enquadramento de anúncio e acabamento profissional. Cada vídeo destaca uma peça ou um look.",
+      "inclui": [
+        "Vídeo curto (até 15 segundos)",
+        "Modelo de IA vestindo a sua peça",
+        "Formato à sua escolha",
+        "Pronto para anúncio, Reels, TikTok e Status"
+      ],
+      "preco": 49.9,
+      "faixas": [
+        {
+          "aPartirDe": 5,
+          "preco": 44.9
+        },
+        {
+          "aPartirDe": 10,
+          "preco": 39.9
+        }
+      ],
+      "quantidades": [
+        1,
+        3,
+        5,
+        10,
+        20
+      ],
+      "opcoes": {
+        "nome": "Formato",
+        "valores": [
+          "Vertical 9:16 (Reels, TikTok, Status)",
+          "Quadrado 1:1 (Feed)",
+          "Horizontal 16:9 (YouTube, site)"
+        ]
+      },
+      "prazo": "Prazo combinado no atendimento",
+      "fotos": [
+        "videos/jeans-calca-skinny.jpg",
+        "videos/jeans-short.jpg",
+        "imagens/servico-video-ia.svg"
+      ],
+      "video": "videos/jeans-calca-skinny.mp4",
+      "videoCapa": "videos/jeans-calca-skinny.jpg",
+      "videoFormato": "vertical"
     },
     {
-      "id": "video-modelo",
-      "nome": "Vídeo com Modelo",
-      "categoria": "Vídeo",
-      "resumo": "Modelos vestindo as suas peças em movimento: andando, alongando, treinando. Mostra o caimento real.",
-      "descricao": "O cliente vê a roupa no corpo, em ação. Criamos o roteiro, escolhemos o cenário e dirigimos o modelo para destacar o que a sua peça tem de melhor: liberdade de movimento, tecido que não marca e conforto. Perfeito para lançamentos e anúncios.",
-      "inclui": ["Modelo profissional (feminino ou masculino)", "Até 6 looks por diária", "5 vídeos editados (verticais e horizontais)", "Roteiro e direção de cena"],
-      "preco": null,
-      "fotos": ["imagens/servico-video-modelo.svg", "imagens/galeria-modelo-1.svg", "imagens/galeria-modelo-2.svg"],
-      "video": ""
+      "id": "foto-ia",
+      "nome": "Foto com modelo de IA",
+      "categoria": "Fotos",
+      "unidade": "foto",
+      "unidadePlural": "fotos",
+      "resumo": "Fotos de catálogo e de anúncio com modelo de IA usando a sua roupa, sem precisar de estúdio.",
+      "descricao": "Transformo a foto simples da sua peça em fotos com modelo de IA: pose de catálogo, fundo neutro ou cenário lifestyle. Perfeito para loja virtual, Instagram e anúncios.",
+      "inclui": [
+        "Modelo de IA vestindo a sua peça",
+        "Fundo neutro ou cenário",
+        "Formato à sua escolha",
+        "Arquivo em alta resolução"
+      ],
+      "preco": 14.9,
+      "faixas": [
+        {
+          "aPartirDe": 10,
+          "preco": 12.9
+        },
+        {
+          "aPartirDe": 20,
+          "preco": 9.9
+        }
+      ],
+      "quantidades": [
+        1,
+        5,
+        10,
+        20,
+        50
+      ],
+      "opcoes": {
+        "nome": "Formato",
+        "valores": [
+          "Retrato 4:5 (Feed)",
+          "Story 9:16",
+          "Quadrado 1:1",
+          "Fundo branco (loja virtual)"
+        ]
+      },
+      "prazo": "Prazo combinado no atendimento",
+      "fotos": [
+        "videos/jeans-jaqueta.jpg",
+        "videos/jeans-look-completo.jpg",
+        "imagens/servico-foto-ia.svg"
+      ],
+      "video": "videos/jeans-jaqueta.mp4",
+      "videoCapa": "videos/jeans-jaqueta.jpg",
+      "videoFormato": "vertical"
     },
     {
-      "id": "ensaio-catalogo",
-      "nome": "Ensaio de Catálogo",
-      "categoria": "Foto",
-      "resumo": "Fotos de catálogo em fundo neutro e fotos lifestyle, prontas para loja virtual e redes sociais.",
-      "descricao": "Fotos padronizadas para a sua loja virtual (frente, costas e detalhe) e fotos lifestyle com modelo para Instagram e anúncios. Tratamento de cor fiel à peça, para o cliente receber exatamente o que viu.",
-      "inclui": ["Fotos de frente, costas e detalhe", "Fotos lifestyle com modelo", "Tratamento de cor fiel à peça", "Arquivos em alta resolução e versão para web"],
-      "preco": null,
-      "fotos": ["imagens/servico-ensaio.svg", "imagens/galeria-estudio-1.svg", "imagens/galeria-modelo-2.svg"],
-      "video": ""
-    },
-    {
-      "id": "combo-lancamento",
-      "nome": "Combo Lançamento de Coleção",
-      "categoria": "Combo",
-      "resumo": "Vídeos + fotos de toda a coleção numa produção só, com o melhor custo por peça.",
-      "descricao": "Para quem vai lançar coleção nova: planejamos tudo junto com você, produzimos vídeos com modelo, vídeos de detalhe e o ensaio de catálogo completo no mesmo dia. Você sai com conteúdo para semanas de postagem.",
-      "inclui": ["Planejamento da coleção e roteiro", "Vídeos com modelo e vídeos de detalhe", "Ensaio de catálogo completo", "Bastidores para os Stories"],
-      "preco": null,
-      "fotos": ["imagens/servico-combo.svg", "imagens/galeria-estudio-2.svg", "imagens/galeria-modelo-1.svg"],
-      "video": ""
+      "id": "pacote-lancamento",
+      "nome": "Pacote Lançamento",
+      "categoria": "Pacotes",
+      "unidade": "pacote",
+      "unidadePlural": "pacotes",
+      "resumo": "Vídeos + fotos para lançar uma coleção inteira, com o melhor preço por peça.",
+      "descricao": "Para quem vai lançar coleção ou movimentar a loja: um pacote com vídeos e fotos com modelos de IA para várias peças, pensado para render semanas de postagem e anúncios.",
+      "inclui": [
+        "5 vídeos com modelo de IA",
+        "15 fotos com modelo de IA",
+        "Formatos variados (Reels, Feed e Story)",
+        "Ideias de legenda para os posts"
+      ],
+      "preco": 349.9,
+      "faixas": [],
+      "quantidades": [],
+      "opcoes": null,
+      "prazo": "Prazo combinado no atendimento",
+      "fotos": [
+        "videos/jeans-look-completo.jpg",
+        "imagens/servico-combo.svg"
+      ],
+      "video": "videos/jeans-look-completo.mp4",
+      "videoCapa": "videos/jeans-look-completo.jpg",
+      "videoFormato": "horizontal"
     }
   ],
-
   "fotos": [
-    { "imagem": "imagens/galeria-modelo-1.svg", "titulo": "Modelo em movimento", "categoria": "Modelos" },
-    { "imagem": "imagens/galeria-detalhe-1.svg", "titulo": "Elasticidade da lycra", "categoria": "Detalhes" },
-    { "imagem": "imagens/galeria-estudio-1.svg", "titulo": "Luz de estúdio", "categoria": "Estúdio" },
-    { "imagem": "imagens/galeria-modelo-2.svg", "titulo": "Look completo", "categoria": "Modelos" },
-    { "imagem": "imagens/galeria-detalhe-2.svg", "titulo": "Costura e acabamento", "categoria": "Detalhes" },
-    { "imagem": "imagens/galeria-estudio-2.svg", "titulo": "Bastidores", "categoria": "Estúdio" },
-    { "imagem": "imagens/camisa-raglan-1.svg", "titulo": "Camisa Raglan Pro", "categoria": "Produtos" },
-    { "imagem": "imagens/short-lycra-1.svg", "titulo": "Short com lycra", "categoria": "Produtos" }
+    {
+      "imagem": "videos/jeans-calca-skinny.jpg",
+      "titulo": "Calça jeans skinny (teste)",
+      "categoria": "Jeans"
+    },
+    {
+      "imagem": "videos/jeans-jaqueta.jpg",
+      "titulo": "Jaqueta jeans (teste)",
+      "categoria": "Jeans"
+    },
+    {
+      "imagem": "videos/jeans-short.jpg",
+      "titulo": "Short jeans (teste)",
+      "categoria": "Jeans"
+    },
+    {
+      "imagem": "videos/jeans-look-completo.jpg",
+      "titulo": "Look jeans completo (teste)",
+      "categoria": "Jeans"
+    },
+    {
+      "imagem": "imagens/galeria-modelo-1.svg",
+      "titulo": "Modelo IA com short Dry Fit",
+      "categoria": "Anúncio"
+    },
+    {
+      "imagem": "imagens/galeria-detalhe-1.svg",
+      "titulo": "Detalhe do tecido",
+      "categoria": "Catálogo"
+    },
+    {
+      "imagem": "imagens/galeria-estudio-1.svg",
+      "titulo": "Fundo neutro para loja virtual",
+      "categoria": "Catálogo"
+    },
+    {
+      "imagem": "imagens/galeria-modelo-2.svg",
+      "titulo": "Look completo",
+      "categoria": "Anúncio"
+    },
+    {
+      "imagem": "imagens/galeria-detalhe-2.svg",
+      "titulo": "Costura e acabamento",
+      "categoria": "Catálogo"
+    },
+    {
+      "imagem": "imagens/galeria-estudio-2.svg",
+      "titulo": "Cenário lifestyle",
+      "categoria": "Story"
+    },
+    {
+      "imagem": "imagens/camisa-raglan-1.svg",
+      "titulo": "Peça original enviada pela loja",
+      "categoria": "Antes"
+    },
+    {
+      "imagem": "imagens/short-lycra-1.svg",
+      "titulo": "Peça original enviada pela loja",
+      "categoria": "Antes"
+    }
   ],
-
   "videos": [
-    { "titulo": "Short 2 em 1: teste de elasticidade", "descricao": "Close na lycra interna esticando e voltando ao formato.", "youtube": "", "categoria": "Detalhes", "formato": "vertical" },
-    { "titulo": "Treino funcional com modelo", "descricao": "Camisa e short em movimento real de treino.", "youtube": "", "categoria": "Modelos", "formato": "vertical" },
-    { "titulo": "Lançamento de coleção", "descricao": "Vídeo horizontal para anúncio e site.", "youtube": "", "categoria": "Modelos", "formato": "horizontal" },
-    { "titulo": "Tecido Dry Fit secando", "descricao": "Demonstração de respirabilidade e secagem rápida.", "youtube": "", "categoria": "Detalhes", "formato": "vertical" },
-    { "titulo": "Bastidores do estúdio", "descricao": "Como preparamos luz, cenário e modelo.", "youtube": "", "categoria": "Bastidores", "formato": "horizontal" },
-    { "titulo": "Caimento: frente, lado e costas", "descricao": "Giro completo da peça no corpo.", "youtube": "", "categoria": "Modelos", "formato": "vertical" }
+    {
+      "titulo": "Calça jeans skinny",
+      "descricao": "Vídeo de teste: modelo de IA caminhando com calça jeans.",
+      "video": "videos/jeans-calca-skinny.mp4",
+      "capa": "videos/jeans-calca-skinny.jpg",
+      "categoria": "Anúncio",
+      "formato": "vertical"
+    },
+    {
+      "titulo": "Jaqueta jeans",
+      "descricao": "Vídeo de teste: look urbano com jaqueta jeans.",
+      "video": "videos/jeans-jaqueta.mp4",
+      "capa": "videos/jeans-jaqueta.jpg",
+      "categoria": "Reels",
+      "formato": "vertical"
+    },
+    {
+      "titulo": "Short jeans",
+      "descricao": "Vídeo de teste: short jeans para coleção de verão.",
+      "video": "videos/jeans-short.mp4",
+      "capa": "videos/jeans-short.jpg",
+      "categoria": "Reels",
+      "formato": "vertical"
+    },
+    {
+      "titulo": "Look jeans completo",
+      "descricao": "Vídeo de teste horizontal: jaqueta + calça, para site e YouTube.",
+      "video": "videos/jeans-look-completo.mp4",
+      "capa": "videos/jeans-look-completo.jpg",
+      "categoria": "Catálogo",
+      "formato": "horizontal"
+    }
   ],
-
   "produtos": [
     {
       "id": "camisa-performance",
       "nome": "Camisa Dry Fit Performance",
       "tipo": "Camisa",
-      "preco": 59.90,
-      "precoAntigo": 79.90,
+      "preco": 59.9,
+      "precoAntigo": 79.9,
       "resumo": "Leve, respirável e de secagem rápida. A camisa coringa para treino e dia a dia.",
       "descricao": "Tecido Dry Fit de poliéster com microfuros que deixam o ar circular e puxam o suor para fora da pele, secando rápido. Gola careca reforçada que não deforma e costura que não irrita durante o movimento.",
-      "destaques": ["Secagem rápida", "Tecido respirável", "Não amassa", "Proteção UV"],
-      "tamanhos": ["P", "M", "G", "GG", "XG"],
-      "cores": [
-        { "nome": "Preto", "hex": "#1b1d22", "foto": "imagens/camisa-performance-1.svg" },
-        { "nome": "Branco", "hex": "#f2f2f2", "foto": "imagens/camisa-performance-2.svg" },
-        { "nome": "Azul-marinho", "hex": "#1f2f57", "foto": "imagens/camisa-performance-3.svg" }
+      "destaques": [
+        "Secagem rápida",
+        "Tecido respirável",
+        "Não amassa"
       ],
-      "fotos": ["imagens/camisa-performance-1.svg", "imagens/camisa-performance-2.svg", "imagens/camisa-performance-3.svg"],
+      "tamanhos": [
+        "P",
+        "M",
+        "G",
+        "GG",
+        "XG"
+      ],
+      "cores": [
+        {
+          "nome": "Preto",
+          "hex": "#1b1d22",
+          "foto": "imagens/camisa-performance-1.svg"
+        },
+        {
+          "nome": "Branco",
+          "hex": "#f2f2f2",
+          "foto": "imagens/camisa-performance-2.svg"
+        },
+        {
+          "nome": "Azul-marinho",
+          "hex": "#1f2f57",
+          "foto": "imagens/camisa-performance-3.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/camisa-performance-1.svg",
+        "imagens/camisa-performance-2.svg",
+        "imagens/camisa-performance-3.svg"
+      ],
       "video": "",
       "disponivel": true
     },
@@ -102,17 +306,38 @@
       "id": "camisa-raglan",
       "nome": "Camisa Dry Fit Raglan Pro",
       "tipo": "Camisa",
-      "preco": 64.90,
+      "preco": 64.9,
       "precoAntigo": null,
       "resumo": "Manga raglan para total liberdade nos ombros, com recorte esportivo.",
       "descricao": "O corte raglan tira a costura de cima do ombro, ganhando amplitude para corrida, musculação e esportes com bola. Tecido Dry Fit com toque macio e recorte contrastante.",
-      "destaques": ["Manga raglan", "Mais mobilidade", "Secagem rápida", "Toque macio"],
-      "tamanhos": ["P", "M", "G", "GG"],
-      "cores": [
-        { "nome": "Grafite", "hex": "#2b2e35", "foto": "imagens/camisa-raglan-1.svg" },
-        { "nome": "Azul royal", "hex": "#1e4fd6", "foto": "imagens/camisa-raglan-2.svg" }
+      "destaques": [
+        "Manga raglan",
+        "Mais mobilidade",
+        "Secagem rápida",
+        "Toque macio"
       ],
-      "fotos": ["imagens/camisa-raglan-1.svg", "imagens/camisa-raglan-2.svg"],
+      "tamanhos": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "cores": [
+        {
+          "nome": "Grafite",
+          "hex": "#2b2e35",
+          "foto": "imagens/camisa-raglan-1.svg"
+        },
+        {
+          "nome": "Azul royal",
+          "hex": "#1e4fd6",
+          "foto": "imagens/camisa-raglan-2.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/camisa-raglan-1.svg",
+        "imagens/camisa-raglan-2.svg"
+      ],
       "video": "",
       "disponivel": true
     },
@@ -120,17 +345,37 @@
       "id": "regata-treino",
       "nome": "Regata Dry Fit Treino",
       "tipo": "Camisa",
-      "preco": 49.90,
+      "preco": 49.9,
       "precoAntigo": null,
       "resumo": "Cava ampla e tecido leve para treinos intensos e dias quentes.",
       "descricao": "Regata com cava ampla que libera os braços e ventila melhor. Ideal para musculação, crossfit e corrida no calor.",
-      "destaques": ["Cava ampla", "Ultraleve", "Secagem rápida"],
-      "tamanhos": ["P", "M", "G", "GG"],
-      "cores": [
-        { "nome": "Lima", "hex": "#d8ff3a", "foto": "imagens/regata-treino-1.svg" },
-        { "nome": "Preto", "hex": "#1b1d22", "foto": "imagens/regata-treino-2.svg" }
+      "destaques": [
+        "Cava ampla",
+        "Ultraleve",
+        "Secagem rápida"
       ],
-      "fotos": ["imagens/regata-treino-1.svg", "imagens/regata-treino-2.svg"],
+      "tamanhos": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "cores": [
+        {
+          "nome": "Lima",
+          "hex": "#d8ff3a",
+          "foto": "imagens/regata-treino-1.svg"
+        },
+        {
+          "nome": "Preto",
+          "hex": "#1b1d22",
+          "foto": "imagens/regata-treino-2.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/regata-treino-1.svg",
+        "imagens/regata-treino-2.svg"
+      ],
       "video": "",
       "disponivel": true
     },
@@ -138,17 +383,39 @@
       "id": "short-lycra",
       "nome": "Short Dry Fit 2 em 1 com Lycra",
       "tipo": "Short",
-      "preco": 69.90,
-      "precoAntigo": 89.90,
+      "preco": 69.9,
+      "precoAntigo": 89.9,
       "resumo": "Short Dry Fit por fora e bermuda de lycra por dentro: compressão, conforto e zero assadura.",
       "descricao": "Camada externa em Dry Fit leve e camada interna em elastano (lycra) que dá compressão na medida certa, segura a musculatura e evita atrito entre as pernas. Estica nos quatro sentidos e volta ao formato. Cós elástico com cordão e bolso interno para chave.",
-      "destaques": ["Lycra interna", "Estica em 4 sentidos", "Anti-assadura", "Bolso para chave"],
-      "tamanhos": ["P", "M", "G", "GG", "XG"],
-      "cores": [
-        { "nome": "Preto", "hex": "#1b1d22", "foto": "imagens/short-lycra-1.svg" },
-        { "nome": "Chumbo", "hex": "#3d4a5c", "foto": "imagens/short-lycra-2.svg" }
+      "destaques": [
+        "Lycra interna",
+        "Estica em 4 sentidos",
+        "Anti-assadura",
+        "Bolso para chave"
       ],
-      "fotos": ["imagens/short-lycra-1.svg", "imagens/short-lycra-2.svg"],
+      "tamanhos": [
+        "P",
+        "M",
+        "G",
+        "GG",
+        "XG"
+      ],
+      "cores": [
+        {
+          "nome": "Preto",
+          "hex": "#1b1d22",
+          "foto": "imagens/short-lycra-1.svg"
+        },
+        {
+          "nome": "Chumbo",
+          "hex": "#3d4a5c",
+          "foto": "imagens/short-lycra-2.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/short-lycra-1.svg",
+        "imagens/short-lycra-2.svg"
+      ],
       "video": "",
       "disponivel": true
     },
@@ -156,17 +423,37 @@
       "id": "short-corrida",
       "nome": "Short Dry Fit Corrida",
       "tipo": "Short",
-      "preco": 54.90,
+      "preco": 54.9,
       "precoAntigo": null,
       "resumo": "Leve, curto e com abertura lateral para passada livre.",
       "descricao": "Feito para correr: tecido Dry Fit ultraleve, abertura lateral que não prende a passada e cós elástico com cordão. Seca rápido mesmo em treinos longos.",
-      "destaques": ["Abertura lateral", "Ultraleve", "Secagem rápida"],
-      "tamanhos": ["P", "M", "G", "GG"],
-      "cores": [
-        { "nome": "Vermelho", "hex": "#c8102e", "foto": "imagens/short-corrida-1.svg" },
-        { "nome": "Preto", "hex": "#1b1d22", "foto": "imagens/short-corrida-2.svg" }
+      "destaques": [
+        "Abertura lateral",
+        "Ultraleve",
+        "Secagem rápida"
       ],
-      "fotos": ["imagens/short-corrida-1.svg", "imagens/short-corrida-2.svg"],
+      "tamanhos": [
+        "P",
+        "M",
+        "G",
+        "GG"
+      ],
+      "cores": [
+        {
+          "nome": "Vermelho",
+          "hex": "#c8102e",
+          "foto": "imagens/short-corrida-1.svg"
+        },
+        {
+          "nome": "Preto",
+          "hex": "#1b1d22",
+          "foto": "imagens/short-corrida-2.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/short-corrida-1.svg",
+        "imagens/short-corrida-2.svg"
+      ],
       "video": "",
       "disponivel": true
     },
@@ -174,17 +461,37 @@
       "id": "bermuda-elastica",
       "nome": "Bermuda Dry Fit Elástica",
       "tipo": "Short",
-      "preco": 64.90,
+      "preco": 64.9,
       "precoAntigo": null,
       "resumo": "Comprimento na altura do joelho, tecido com elastano para treino e uso casual.",
       "descricao": "Bermuda mais comprida, com tecido Dry Fit misturado a elastano: acompanha o agachamento sem apertar. Vai bem na academia e no dia a dia.",
-      "destaques": ["Com elastano", "Altura do joelho", "Uso casual e treino"],
-      "tamanhos": ["M", "G", "GG", "XG"],
-      "cores": [
-        { "nome": "Verde militar", "hex": "#4b5320", "foto": "imagens/bermuda-elastica-1.svg" },
-        { "nome": "Preto", "hex": "#1b1d22", "foto": "imagens/bermuda-elastica-2.svg" }
+      "destaques": [
+        "Com elastano",
+        "Altura do joelho",
+        "Uso casual e treino"
       ],
-      "fotos": ["imagens/bermuda-elastica-1.svg", "imagens/bermuda-elastica-2.svg"],
+      "tamanhos": [
+        "M",
+        "G",
+        "GG",
+        "XG"
+      ],
+      "cores": [
+        {
+          "nome": "Verde militar",
+          "hex": "#4b5320",
+          "foto": "imagens/bermuda-elastica-1.svg"
+        },
+        {
+          "nome": "Preto",
+          "hex": "#1b1d22",
+          "foto": "imagens/bermuda-elastica-2.svg"
+        }
+      ],
+      "fotos": [
+        "imagens/bermuda-elastica-1.svg",
+        "imagens/bermuda-elastica-2.svg"
+      ],
       "video": "",
       "disponivel": true
     }

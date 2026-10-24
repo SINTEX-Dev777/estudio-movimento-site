@@ -1,7 +1,7 @@
 {
-  "name": "Estúdio Movimento — Vídeos, Fotos e Loja Dry Fit",
-  "short_name": "Movimento",
-  "description": "Catálogos de vídeos e fotos para moda e loja de camisas e shorts Dry Fit.",
+  "name": "Julian Carlos — Vídeos e Fotos com IA",
+  "short_name": "Julian Carlos",
+  "description": "Vídeos e fotos com modelos de IA para lojas de roupa, e Loja Dry Fit.",
   "lang": "pt-BR",
   "id": "/",
   "start_url": "/?origem=app",
@@ -18,6 +18,6 @@
   ],
   "shortcuts": [
     { "name": "Loja Dry Fit", "url": "/#loja", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] },
-    { "name": "Catálogos", "url": "/#catalogos", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] }
+    { "name": "Catálogo IA", "url": "/#catalogos", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] }
   ]
 }

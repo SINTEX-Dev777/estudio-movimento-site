@@ -1,5 +1,5 @@
 /* =========================================================
-   Estúdio Movimento — estilos
+   Julian Carlos — estilos
    Para mudar cores e fontes, edite só as variáveis abaixo.
    ========================================================= */
 :root {
@@ -52,7 +52,9 @@
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--topo-alt) + 16px); }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--topo-alt) + 16px); touch-action: pan-x pan-y; }
+/* Sem zoom de pinça e sem zoom de duplo toque */
+body, button, a, input, select, textarea { touch-action: manipulation; }
 body {
   margin: 0;
   background: var(--fundo);
@@ -327,7 +329,7 @@ main { min-height: 60vh; outline: none; }
 .ferramentas__dir { display: flex; gap: 8px; }
 .campo {
   min-height: 44px; border-radius: 999px; border: 1px solid var(--borda); background: var(--superficie);
-  padding: 0 16px; font: inherit; font-size: 15px; color: var(--texto); width: 100%;
+  padding: 0 16px; font: inherit; font-size: 16px; color: var(--texto); width: 100%;
 }
 .campo:focus { outline: 2px solid var(--acento); border-color: transparent; }
 textarea.campo { border-radius: var(--raio-peq); padding: 12px 14px; min-height: 80px; resize: vertical; }
@@ -500,3 +502,31 @@ select.campo { width: auto; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- Serviços com IA: preço por quantidade ---------- */
+.preco__de { font-size: 13px; color: var(--texto-2); }
+.preco__un { font-size: 14px; color: var(--texto-2); }
+.servico .preco__atual { font-size: 24px; }
+.faixas { list-style: none; margin: 4px 0 0; padding: 0; border: 1px solid var(--borda); border-radius: var(--raio-peq); overflow: hidden; }
+.faixas li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; font-size: 14px; }
+.faixas li + li { border-top: 1px solid var(--borda); }
+.faixas li:last-child { background: color-mix(in srgb, var(--acento) 18%, transparent); }
+.faixas strong { white-space: nowrap; }
+.config { display: grid; gap: 14px; margin-top: 8px; padding: 16px; border-radius: var(--raio); background: var(--superficie-2); }
+.config .opcoes { margin-bottom: 4px; }
+.config .opcao-tam { background: var(--superficie); }
+.config .opcao-tam[aria-pressed="true"] { background: var(--texto); color: var(--fundo); }
+.campo--quadrado { border-radius: var(--raio-peq); width: 100% !important; background: var(--superficie); }
+.qtd input { width: 64px; height: 44px; border: 0; background: transparent; text-align: center; font: inherit; font-weight: 700; font-size: 17px; color: var(--texto); -moz-appearance: textfield; appearance: textfield; }
+.qtd input::-webkit-outer-spin-button, .qtd input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.config__total { display: grid; gap: 2px; }
+.config__total strong { font-size: 20px; }
+.config__total span { color: var(--texto-2); font-size: 14px; }
+.config__total small { color: var(--acento-texto); font-weight: 600; font-size: 13px; }
+.servico .btn-texto { justify-self: center; }
+.aviso-ia { margin-top: 20px; font-size: 13px; color: var(--texto-2); text-align: center; }
+.detalhe__info .aviso-ia { margin-top: 0; text-align: left; }
+.item__dica { font-size: 12px; font-weight: 600; color: var(--acento-texto); }
+.player video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; object-fit: contain; }
+.cartao__midia video { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; display: block; }
+.cartao__midia--larga img { object-position: center 22%; }

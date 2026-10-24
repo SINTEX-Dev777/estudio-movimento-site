@@ -1,7 +1,7 @@
 /* Service worker: deixa o site instalável e abrindo mesmo sem internet.
    Ao mudar arquivos do site NÃO precisa mexer aqui: ele sempre busca a versão
    nova quando há internet. Só troque a VERSAO se quiser apagar o cache antigo. */
-const VERSAO = 'movimento-v1';
+const VERSAO = 'site-v2';
 const BASE = [
   '/', '/index.html', '/css/estilo.css', '/js/app.js', '/dados/catalogo.json',
   '/manifest.webmanifest', '/icones/favicon.svg', '/icones/icone-192.png', '/imagens/video-capa.svg',
@@ -44,6 +44,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // YouTube, fontes etc.: o navegador cuida
+  if (url.pathname.startsWith('/videos/')) return; // vídeos grandes: direto da internet
   if (url.pathname.startsWith('/imagens/') || url.pathname.startsWith('/icones/')) {
     e.respondWith(cacheComAtualizacao(req));
   } else {

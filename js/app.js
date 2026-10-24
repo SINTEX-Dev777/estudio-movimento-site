@@ -1,5 +1,5 @@
 /* =========================================================
-   Estúdio Movimento — app.js
+   Julian Carlos — app.js
    Site de catálogos (vídeos/fotos) + Loja Dry Fit
    Os dados vêm de /dados/catalogo.json (edite lá, não aqui).
    ========================================================= */
@@ -7,7 +7,9 @@
   'use strict';
 
   const ABAS = ['inicio', 'catalogos', 'fotos', 'videos', 'loja'];
-  const TITULOS = { inicio: '', catalogos: 'Catálogos', fotos: 'Fotos', videos: 'Vídeos', loja: 'Loja Dry Fit' };
+  const TITULOS = { inicio: '', catalogos: 'Catálogo IA', fotos: 'Fotos', videos: 'Vídeos', loja: 'Loja Dry Fit' };
+  const QTD_MAX = 999;
+  const MOVIMENTO_REDUZIDO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const CHAVE_CARRINHO = 'em.carrinho.v1';
   const CHAVE_CLIENTE = 'em.cliente.v1';
   const CHAVE_INSTALAR = 'em.instalar.adiado';
@@ -88,9 +90,18 @@
   }
   const ICONE_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
 
-  function playerHTML(url, titulo, formato) {
-    const id = idYoutube(url);
+  // Vídeo próprio (arquivo .mp4/.webm na pasta videos/) ou link do YouTube
+  const ehArquivoVideo = (u) => /\.(mp4|webm|m4v)(\?|#|$)/i.test(String(u ?? '').trim());
+  const temVideo = (u) => !!idYoutube(u) || ehArquivoVideo(u);
+
+  function playerHTML(url, titulo, formato, capa) {
     const cls = 'player' + (ehVertical(url, formato) ? ' player--vertical' : '');
+    if (ehArquivoVideo(url)) {
+      const src = urlSegura(url);
+      return `<div class="${cls}"><button class="player__capa" type="button" data-arquivo="${esc(src)}" data-titulo="${esc(titulo)}" aria-label="Assistir ao vídeo: ${esc(titulo)}">
+        ${capa ? `<img src="${esc(urlSegura(capa))}" alt="" loading="lazy">` : ''}<span class="player__play">${ICONE_PLAY}</span></button></div>`;
+    }
+    const id = idYoutube(url);
     if (!id) {
       return `<div class="${cls}"><div class="player__embreve"><img src="/imagens/video-capa.svg" alt="" loading="lazy"><strong>Vídeo em breve</strong><span>Estamos finalizando este vídeo.</span></div></div>`;
     }
@@ -99,6 +110,19 @@
   }
 
   function tocarVideo(botao) {
+    if (botao.dataset.arquivo) {
+      const video = document.createElement('video');
+      video.src = botao.dataset.arquivo;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.setAttribute('aria-label', botao.dataset.titulo || 'Vídeo');
+      const capa = botao.querySelector('img');
+      if (capa) video.poster = capa.src;
+      botao.replaceWith(video);
+      video.play().catch(() => { /* o navegador pode pedir um toque a mais no play */ });
+      return;
+    }
     const id = botao.dataset.yt;
     const iframe = document.createElement('iframe');
     iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
@@ -132,14 +156,31 @@
       vistos.add(final);
       return final;
     };
-    const catalogos = lista(b.catalogos).filter((c) => c && c.nome).map((c) => ({
-      id: idUnico(c.id, c.nome, 'servico'),
-      nome: String(c.nome), categoria: String(c.categoria || 'Outros'),
-      resumo: String(c.resumo || ''), descricao: String(c.descricao || ''),
-      inclui: lista(c.inclui).map(String), prazo: c.prazo ? String(c.prazo) : '',
-      preco: paraCentavos(c.preco), fotos: lista(c.fotos).map(urlSegura).filter(Boolean), video: String(c.video || ''),
-      videoFormato: c.videoFormato || '',
-    }));
+    const catalogos = lista(b.catalogos).filter((c) => c && c.nome).map((c) => {
+      const unidade = String(c.unidade || 'unidade');
+      const valoresOpcao = c.opcoes ? lista(c.opcoes.valores).map(String).filter(Boolean) : [];
+      return {
+        id: idUnico(c.id, c.nome, 'servico'),
+        nome: String(c.nome), categoria: String(c.categoria || 'Outros'),
+        unidade, unidadePlural: String(c.unidadePlural || unidade + 's'),
+        resumo: String(c.resumo || ''), descricao: String(c.descricao || ''),
+        inclui: lista(c.inclui).map(String), prazo: c.prazo ? String(c.prazo) : '',
+        preco: paraCentavos(c.preco),
+        // Desconto por quantidade: a partir de X unidades, cada uma sai por Y
+        faixas: lista(c.faixas).map((f) => ({ de: parseInt(f && f.aPartirDe, 10) || 0, preco: paraCentavos(f && f.preco) }))
+          .filter((f) => f.de >= 2 && f.preco).sort((a, b) => a.de - b.de),
+        quantidades: [...new Set(lista(c.quantidades).map((n) => parseInt(n, 10)).filter((n) => n > 0 && n <= QTD_MAX))],
+        opcoes: valoresOpcao.length ? { nome: String(c.opcoes.nome || 'Opção'), valores: valoresOpcao } : null,
+        fotos: lista(c.fotos).map(urlSegura).filter(Boolean), video: String(c.video || ''),
+        videoFormato: c.videoFormato || '', videoCapa: urlSegura(c.videoCapa),
+      };
+    });
+    const t = b.textos || {};
+    const textos = {
+      heroSobretitulo: String(t.heroSobretitulo || ''), heroTitulo: String(t.heroTitulo || loja.nome),
+      heroDestaque: String(t.heroDestaque || ''), avisoIA: String(t.avisoIA || ''),
+      comoFunciona: lista(t.comoFunciona).filter((p) => p && p.titulo).map((p) => ({ titulo: String(p.titulo), texto: String(p.texto || '') })),
+    };
     const produtos = lista(b.produtos).filter((p) => p && p.nome).map((p, i) => {
       const cores = lista(p.cores).filter((c) => c && c.nome).map((c) => ({ nome: String(c.nome), hex: corSegura(c.hex), foto: urlSegura(c.foto) }));
       let fotos = lista(p.fotos).map(urlSegura).filter(Boolean);
@@ -150,13 +191,27 @@
         preco: paraCentavos(p.preco), precoAntigo: paraCentavos(p.precoAntigo),
         resumo: String(p.resumo || ''), descricao: String(p.descricao || ''),
         destaques: lista(p.destaques).map(String), tamanhos: lista(p.tamanhos).map(String),
-        cores, fotos, video: String(p.video || ''), videoFormato: p.videoFormato || '',
+        cores, fotos, video: String(p.video || ''), videoFormato: p.videoFormato || '', videoCapa: urlSegura(p.videoCapa),
         disponivel: p.disponivel !== false,
       };
     });
     const fotos = lista(b.fotos).filter((f) => f && f.imagem).map((f) => ({ imagem: urlSegura(f.imagem), titulo: String(f.titulo || ''), categoria: String(f.categoria || 'Outros') })).filter((f) => f.imagem);
-    const videos = lista(b.videos).filter((v) => v && v.titulo).map((v) => ({ titulo: String(v.titulo), descricao: String(v.descricao || ''), youtube: String(v.youtube || ''), categoria: String(v.categoria || 'Outros'), formato: v.formato || '' }));
-    return { loja, catalogos, produtos, fotos, videos };
+    const videos = lista(b.videos).filter((v) => v && v.titulo).map((v) => ({ titulo: String(v.titulo), descricao: String(v.descricao || ''), youtube: String(v.video || v.youtube || ''), capa: urlSegura(v.capa), categoria: String(v.categoria || 'Outros'), formato: v.formato || '' }));
+    return { loja, textos, catalogos, produtos, fotos, videos };
+  }
+
+  /* ---------- Preço dos serviços (vídeos e fotos) ---------- */
+  // Preço de cada unidade para uma quantidade total (aplica a faixa de desconto)
+  function precoServico(c, qtdTotal) {
+    let p = c.preco;
+    c.faixas.forEach((f) => { if (qtdTotal >= f.de) p = f.preco; });
+    return p;
+  }
+  const qtdServicoNoPedido = (id) => E.carrinho.filter((i) => i.tipo === 'servico' && i.id === id).reduce((s, i) => s + i.qtd, 0);
+  const nomeQtd = (c, n) => `${n} ${n === 1 ? c.unidade : c.unidadePlural}`;
+  const menorPreco = (c) => (c.faixas.length ? c.faixas[c.faixas.length - 1].preco : c.preco);
+  function proximaFaixa(c, qtdTotal) {
+    return c.faixas.find((f) => f.de > qtdTotal) || null;
   }
 
   const acharProduto = (id) => E.dados.produtos.find((p) => p.id === id);
@@ -175,12 +230,12 @@
 
   function cartaoProduto(p) {
     const d = desconto(p);
-    const temVideo = !!idYoutube(p.video);
+    const comVideo = temVideo(p.video);
     return `<article class="cartao">
       <button class="cartao__midia" type="button" data-abrir-produto="${esc(p.id)}" aria-label="Ver fotos, vídeo e detalhes de ${esc(p.nome)}">
         <img src="${esc(p.fotos[0] || IMG_FALHA)}" alt="${esc(p.nome)}" loading="lazy" width="800" height="1000">
         ${!p.disponivel ? '<span class="selo selo--escuro">Esgotado</span>' : d ? `<span class="selo">-${d}%</span>` : ''}
-        ${temVideo ? `<span class="selo selo--escuro selo--video">${ICONE_VIDEO}Vídeo</span>` : ''}
+        ${comVideo ? `<span class="selo selo--escuro selo--video">${ICONE_VIDEO}Vídeo</span>` : ''}
       </button>
       <div class="cartao__corpo">
         <span class="cartao__tipo">${esc(p.tipo)}</span>
@@ -194,26 +249,80 @@
     </article>`;
   }
 
+  // Preço do serviço: "a partir de R$ X por vídeo"
+  function precoServicoHTML(c) {
+    if (!c.preco) return `<div class="preco"><span class="preco__consulta">Sob consulta</span></div>`;
+    const de = c.faixas.length ? '<span class="preco__de">a partir de</span>' : '';
+    return `<div class="preco">${de}<span class="preco__atual">${reais(menorPreco(c))}</span><span class="preco__un">por ${esc(c.unidade)}</span></div>`;
+  }
+
+  // Tabela de desconto por quantidade
+  function faixasHTML(c) {
+    if (!c.preco || !c.faixas.length) return '';
+    const pontos = [{ de: 1, preco: c.preco }, ...c.faixas];
+    return `<ul class="faixas" aria-label="Preço por quantidade">${pontos.map((f, i) => {
+      const prox = pontos[i + 1];
+      const faixa = prox ? (prox.de - 1 === f.de ? nomeQtd(c, f.de) : `${f.de} a ${prox.de - 1} ${c.unidadePlural}`) : `${f.de} ou mais`;
+      return `<li><span>${esc(faixa)}</span><strong>${reais(f.preco)} cada</strong></li>`;
+    }).join('')}</ul>`;
+  }
+
+  // Escolha de quantidade e formato (usado no cartão e na janela de detalhes)
+  function configuradorHTML(c) {
+    const inicial = 1;
+    return `<div class="config" data-config="${esc(c.id)}">
+      ${c.opcoes ? `<label class="escolha"><span class="escolha__rotulo">${esc(c.opcoes.nome)}</span>
+        <select class="campo campo--quadrado" data-config-opcao>${c.opcoes.valores.map((v) => `<option>${esc(v)}</option>`).join('')}</select></label>` : ''}
+      <div class="escolha">
+        <span class="escolha__rotulo">Quantos ${esc(c.unidadePlural)}?</span>
+        ${c.quantidades.length ? `<div class="opcoes">${c.quantidades.map((n) => `<button class="opcao-tam" type="button" data-config-rapida="${n}" aria-pressed="${n === inicial}">${n}</button>`).join('')}</div>` : ''}
+        <div class="qtd"><button type="button" data-config-qtd="-1" aria-label="Diminuir quantidade">−</button><input type="number" inputmode="numeric" min="1" max="${QTD_MAX}" value="${inicial}" data-config-valor aria-label="Quantidade de ${esc(c.unidadePlural)}"><button type="button" data-config-qtd="1" aria-label="Aumentar quantidade">+</button></div>
+      </div>
+      <div class="config__total" data-config-total aria-live="polite"></div>
+      <button class="btn btn--primario btn--bloco" type="button" data-config-adicionar>Adicionar ao pedido</button>
+    </div>`;
+  }
+
+  function lerQtdConfig(box) {
+    const input = $('[data-config-valor]', box);
+    const n = Math.min(QTD_MAX, Math.max(1, parseInt(input.value, 10) || 1));
+    return n;
+  }
+  function atualizarConfig(box) {
+    const c = acharServico(box.dataset.config);
+    if (!c) return;
+    const qtd = lerQtdConfig(box);
+    $$('[data-config-rapida]', box).forEach((b) => b.setAttribute('aria-pressed', Number(b.dataset.configRapida) === qtd));
+    const alvo = $('[data-config-total]', box);
+    if (!c.preco) { alvo.innerHTML = `<strong>${esc(nomeQtd(c, qtd))}</strong><span>Valor combinado no atendimento</span>`; return; }
+    const unit = precoServico(c, qtd);
+    const total = unit * qtd;
+    const economia = c.preco * qtd - total;
+    const prox = proximaFaixa(c, qtd);
+    alvo.innerHTML = `<strong>${esc(nomeQtd(c, qtd))} = ${reais(total)}</strong>
+      <span>${reais(unit)} cada${economia > 0 ? ` · você economiza ${reais(economia)}` : ''}</span>
+      ${prox ? `<small>Com ${prox.de} ou mais, cada ${esc(c.unidade)} sai por ${reais(prox.preco)}.</small>` : ''}`;
+  }
+  const iniciarConfigs = (raiz) => $$('[data-config]', raiz).forEach(atualizarConfig);
+
   function cartaoServico(c) {
-    const noPedido = E.carrinho.some((i) => i.tipo === 'servico' && i.id === c.id);
-    const temVideo = !!idYoutube(c.video);
+    const comVideo = temVideo(c.video);
     return `<article class="cartao servico">
-      <button class="cartao__midia cartao__midia--larga" type="button" data-abrir-servico="${esc(c.id)}" aria-label="Ver fotos, vídeo e detalhes de ${esc(c.nome)}">
-        <img src="${esc(c.fotos[0] || IMG_FALHA)}" alt="${esc(c.nome)}" loading="lazy" width="1200" height="900">
+      <button class="cartao__midia cartao__midia--larga" type="button" data-abrir-servico="${esc(c.id)}" aria-label="Ver exemplos e detalhes de ${esc(c.nome)}">
+        ${ehArquivoVideo(c.video)
+          ? `<video src="${esc(urlSegura(c.video))}" ${c.videoCapa ? `poster="${esc(c.videoCapa)}"` : ''} ${MOVIMENTO_REDUZIDO ? '' : 'autoplay'} muted loop playsinline preload="metadata" aria-hidden="true"></video>`
+          : `<img src="${esc(c.fotos[0] || IMG_FALHA)}" alt="${esc(c.nome)}" loading="lazy" width="1200" height="900">`}
         <span class="selo">${esc(c.categoria)}</span>
-        ${temVideo ? `<span class="selo selo--escuro selo--video">${ICONE_VIDEO}Vídeo</span>` : ''}
+        ${comVideo ? `<span class="selo selo--escuro selo--video">${ICONE_VIDEO}Vídeo</span>` : ''}
       </button>
       <div class="cartao__corpo">
         <h3>${esc(c.nome)}</h3>
         <p>${esc(c.resumo)}</p>
+        ${precoServicoHTML(c)}
+        ${faixasHTML(c)}
         ${c.inclui.length ? `<ul class="lista-check">${c.inclui.slice(0, 4).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
-        <div class="cartao__rodape">
-          ${precoHTML(c)}
-        </div>
-        <div class="cartao__rodape">
-          <button class="btn btn--contorno btn--peq" type="button" data-abrir-servico="${esc(c.id)}">Fotos, vídeo e detalhes</button>
-          <button class="btn ${noPedido ? 'btn--escuro' : 'btn--primario'} btn--peq" type="button" data-alternar-servico="${esc(c.id)}" aria-pressed="${noPedido}">${noPedido ? '✓ No pedido' : 'Adicionar ao pedido'}</button>
-        </div>
+        ${configuradorHTML(c)}
+        <button class="btn-texto" type="button" data-abrir-servico="${esc(c.id)}">Ver exemplos e detalhes</button>
       </div>
     </article>`;
   }
@@ -221,7 +330,7 @@
   function cartaoVideo(v) {
     const vertical = ehVertical(v.youtube, v.formato);
     return `<article class="video ${vertical ? '' : 'video--horizontal'}">
-      ${playerHTML(v.youtube, v.titulo, v.formato)}
+      ${playerHTML(v.youtube, v.titulo, v.formato, v.capa)}
       <div class="video__info"><h3>${esc(v.titulo)}</h3>${v.descricao ? `<p>${esc(v.descricao)}</p>` : ''}</div>
     </article>`;
   }
@@ -241,76 +350,83 @@
 
   /* ---------- Abas ---------- */
   function renderInicio() {
-    const { loja, videos, produtos, catalogos } = E.dados;
+    const { loja, textos, videos, produtos, catalogos } = E.dados;
     const capaServ = catalogos[0]?.fotos[0] || '';
-    const capaLoja = produtos[0]?.fotos[0] || '';
+    const precos = catalogos.filter((c) => c.preco && c.unidade !== 'pacote');
+    const destaqueVideos = videos.filter((v) => ehVertical(v.youtube, v.formato));
     $('#aba-inicio').innerHTML = `
       <div class="hero">
         <div class="hero__in">
           <div style="display:grid;gap:20px">
-            <span class="sobretitulo" style="color:var(--acento)">Produtora de conteúdo para moda</span>
-            <h1>Sua roupa <span>em movimento</span></h1>
+            ${textos.heroSobretitulo ? `<span class="sobretitulo" style="color:var(--acento)">${esc(textos.heroSobretitulo)}</span>` : ''}
+            <h1>${esc(textos.heroTitulo)} ${textos.heroDestaque ? `<span>${esc(textos.heroDestaque)}</span>` : ''}</h1>
             <p class="hero__sub">${esc(loja.descricao)}</p>
             <div class="hero__acoes">
-              <a class="btn btn--primario" href="#catalogos">Ver catálogos</a>
-              <a class="btn btn--contorno" href="#loja">Loja Dry Fit</a>
+              <a class="btn btn--primario" href="#catalogos">Escolher vídeos e fotos</a>
+              <a class="btn btn--contorno" href="#videos">Ver exemplos</a>
             </div>
           </div>
           <div class="portas">
             <a class="porta" href="#catalogos">
               ${capaServ ? `<img src="${esc(capaServ)}" alt="" loading="lazy">` : ''}
-              <strong>Vídeos e fotos</strong>
-              <span>Modelos vestindo as suas peças, closes de tecido e elasticidade.</span>
-              <em>Ver catálogos →</em>
+              <strong>Vídeos e fotos com IA</strong>
+              <span>${precos.length ? esc(precos.map((c) => `${c.unidadePlural[0].toUpperCase() + c.unidadePlural.slice(1)} a partir de ${reais(menorPreco(c))}`).join(' · ')) : 'Você escolhe quantos vídeos e fotos quer.'}</span>
+              <em>Montar meu pedido →</em>
             </a>
-            <a class="porta porta--loja" href="#loja">
+            ${produtos.length ? `<a class="porta porta--loja" href="#loja">
               <strong>Loja Dry Fit</strong>
-              <span>Camisas e shorts que secam rápido, para treino e dia a dia.</span>
-              <em>Comprar agora →</em>
-            </a>
+              <span>Também vendo camisas e shorts Dry Fit para treino e dia a dia.</span>
+              <em>Ver a loja →</em>
+            </a>` : ''}
           </div>
         </div>
       </div>
 
-      <div class="secao">
-        <div class="cabeca"><span class="sobretitulo">Como funciona</span><h2>Do roteiro ao vídeo pronto</h2></div>
-        <div class="grade grade--3 passos" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-          <div class="passo"><h3>Escolha no catálogo</h3><p>Veja os pacotes de vídeo e foto, com exemplos reais de cada um.</p></div>
-          <div class="passo"><h3>Combine pelo WhatsApp</h3><p>Monte o pedido no site e envie. Alinhamos peças, roteiro e data.</p></div>
-          <div class="passo"><h3>Receba e venda</h3><p>Vídeos e fotos editados, prontos para Reels, TikTok, loja virtual e anúncios.</p></div>
+      ${textos.comoFunciona.length ? `<div class="secao">
+        <div class="cabeca"><span class="sobretitulo">Como funciona</span><h2>Simples, rápido e sem estúdio</h2></div>
+        <div class="grade passos" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+          ${textos.comoFunciona.map((p) => `<div class="passo"><h3>${esc(p.titulo)}</h3><p>${esc(p.texto)}</p></div>`).join('')}
         </div>
-      </div>
+      </div>` : ''}
 
-      ${videos.length ? `<div class="secao" style="padding-top:0">
-        <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Portfólio</span><h2>Vídeos em destaque</h2></div><a class="ver-tudo" href="#videos">Ver todos →</a></div>
-        <div class="grade-videos">${videos.filter((v) => ehVertical(v.youtube, v.formato)).slice(0, 3).map(cartaoVideo).join('')}</div>
+      ${destaqueVideos.length ? `<div class="secao" style="padding-top:0">
+        <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Exemplos</span><h2>Vídeos feitos com IA</h2></div><a class="ver-tudo" href="#videos">Ver todos →</a></div>
+        <div class="grade-videos">${destaqueVideos.slice(0, 3).map(cartaoVideo).join('')}</div>
+      </div>` : ''}
+
+      ${catalogos.length ? `<div class="secao" style="padding-top:0">
+        <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Catálogo</span><h2>Escolha quantos quer</h2></div><a class="ver-tudo" href="#catalogos">Ver catálogo →</a></div>
+        <div class="grade grade--servicos">${catalogos.filter((c) => c.unidade !== 'pacote').slice(0, 2).map(cartaoServico).join('')}</div>
       </div>` : ''}
 
       ${produtos.length ? `<div class="secao" style="padding-top:0">
-        <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Loja Dry Fit</span><h2>Mais procurados</h2></div><a class="ver-tudo" href="#loja">Ver loja →</a></div>
+        <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Minha loja</span><h2>Loja Dry Fit</h2></div><a class="ver-tudo" href="#loja">Ver loja →</a></div>
         <div class="grade grade--4">${produtos.slice(0, 4).map(cartaoProduto).join('')}</div>
       </div>` : ''}
 
       <div class="secao" style="padding-top:0">
         <div class="chamada">
-          <span class="sobretitulo">Tem uma marca de roupa?</span>
-          <h2>Vamos criar o conteúdo que vende a sua peça</h2>
-          <p>Conte o que você precisa e receba uma proposta pelo WhatsApp.</p>
-          <a class="btn btn--zap" href="${esc(linkZap(`Olá! Vim pelo site e quero um orçamento de vídeos/fotos para a minha marca.`))}" target="_blank" rel="noopener">Pedir orçamento no WhatsApp</a>
+          <span class="sobretitulo">Tem uma loja de roupas?</span>
+          <h2>Vamos criar os vídeos que vendem a sua peça</h2>
+          <p>Tire suas dúvidas e mande as fotos das peças pelo WhatsApp.</p>
+          <a class="btn btn--zap" href="${esc(linkZap('Olá! Vim pelo site e quero saber mais sobre os vídeos e fotos com IA para a minha loja.'))}" target="_blank" rel="noopener">Falar no WhatsApp</a>
         </div>
       </div>`;
+    iniciarConfigs($('#aba-inicio'));
   }
 
   function renderCatalogos() {
-    const { catalogos } = E.dados;
+    const { catalogos, textos } = E.dados;
     const lista = catalogos.filter((c) => E.filtro.catalogos === 'Todos' || c.categoria === E.filtro.catalogos);
     $('#aba-catalogos').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Produção de conteúdo</span><h2>Catálogos</h2>
-        <p>Pacotes de vídeo e foto com modelos para a sua marca. Toque em um pacote para ver fotos, vídeo e tudo o que está incluído.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Catálogo</span><h2>Vídeos e fotos com IA</h2>
+        <p>Escolha quantos vídeos e fotos você quer e o formato de cada um. O preço aparece na hora e fica mais barato quanto mais você leva.</p></div>
       ${filtrosHTML('catalogos', categoriasDe(catalogos, 'categoria'))}
       ${lista.length ? `<div class="grade grade--servicos">${lista.map(cartaoServico).join('')}</div>`
-        : `<div class="vazio"><strong>Nenhum pacote cadastrado ainda</strong><span>Em breve novos catálogos por aqui.</span></div>`}
+        : `<div class="vazio"><strong>Nenhum serviço cadastrado ainda</strong><span>Em breve novidades por aqui.</span></div>`}
+      ${textos.avisoIA ? `<p class="aviso-ia">${esc(textos.avisoIA)}</p>` : ''}
     </div>`;
+    iniciarConfigs($('#aba-catalogos'));
   }
 
   function fotosFiltradas() {
@@ -319,18 +435,18 @@
   function renderFotos() {
     const lista = fotosFiltradas();
     $('#aba-fotos').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Portfólio</span><h2>Fotos</h2><p>Ensaios, modelos e detalhes de tecido. Toque em uma foto para ampliar.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Exemplos</span><h2>Fotos com IA</h2><p>Fotos com modelos criados por inteligência artificial vestindo roupas de lojas. Toque em uma foto para ampliar.</p></div>
       ${filtrosHTML('fotos', categoriasDe(E.dados.fotos, 'categoria'))}
       ${lista.length ? `<div class="galeria">${lista.map((f, i) => `<button class="galeria__item" type="button" data-foto="${i}" aria-label="Ampliar foto: ${esc(f.titulo || 'sem título')}">
           <img src="${esc(f.imagem)}" alt="${esc(f.titulo)}" loading="lazy">${f.titulo ? `<span>${esc(f.titulo)}</span>` : ''}</button>`).join('')}</div>`
-        : `<div class="vazio"><strong>Nenhuma foto por aqui ainda</strong><span>Volte em breve para ver os novos ensaios.</span></div>`}
+        : `<div class="vazio"><strong>Nenhuma foto por aqui ainda</strong><span>Volte em breve para ver novos exemplos.</span></div>`}
     </div>`;
   }
 
   function renderVideos() {
     const lista = E.dados.videos.filter((v) => E.filtro.videos === 'Todos' || v.categoria === E.filtro.videos);
     $('#aba-videos').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Portfólio</span><h2>Vídeos</h2><p>Vídeos demonstrativos com modelos: caimento, movimento, elasticidade da lycra e acabamento.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Exemplos</span><h2>Vídeos com IA</h2><p>Vídeos demonstrativos com modelos de IA vestindo as peças: caimento, movimento e detalhes, prontos para anúncio.</p></div>
       ${filtrosHTML('videos', categoriasDe(E.dados.videos, 'categoria'))}
       ${lista.length ? `<div class="grade-videos">${lista.map(cartaoVideo).join('')}</div>`
         : `<div class="vazio"><strong>Nenhum vídeo nesta categoria</strong><span>Escolha outra categoria acima.</span></div>`}
@@ -340,8 +456,8 @@
   function renderLoja() {
     const { produtos } = E.dados;
     $('#aba-loja').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Loja</span><h2>Loja Dry Fit</h2>
-        <p>Camisas e shorts Dry Fit: leves, respiráveis e de secagem rápida. Escolha cor e tamanho, monte o pedido e finalize pelo WhatsApp.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Minha loja</span><h2>Loja Dry Fit</h2>
+        <p>Além dos vídeos com IA, também vendo camisas e shorts Dry Fit: leves, respiráveis e de secagem rápida. Escolha cor e tamanho e finalize pelo WhatsApp.</p></div>
       <div class="ferramentas">
         ${filtrosHTML('loja', categoriasDe(produtos, 'tipo'), plural) || '<div></div>'}
         <div class="ferramentas__dir">
@@ -400,7 +516,7 @@
           <li><a href="#" data-instalar>Instalar o app no celular</a></li>
         </ul></div>
       </div>
-      <div class="rodape__base">© ${new Date().getFullYear()} ${esc(loja.nome)} · Este site não usa cookies de rastreamento. Os vídeos do YouTube só carregam quando você toca para assistir.</div>`;
+      <div class="rodape__base">© ${new Date().getFullYear()} ${esc(loja.nome)}</div>`;
   }
 
   const RENDER = { inicio: renderInicio, catalogos: renderCatalogos, fotos: renderFotos, videos: renderVideos, loja: renderLoja };
@@ -433,11 +549,6 @@
     } else if (E.modalAberto) {
       fecharModal(true);
     }
-  }
-
-  function rerenderAbas() {
-    // Mantém tudo coerente quando o pedido muda (ex.: botão "No pedido" dos catálogos)
-    E.renderizadas.forEach((a) => { if (a === 'catalogos' || a === 'inicio') { if (a === E.aba) RENDER[a](); else E.renderizadas.delete(a); } });
   }
 
   /* ---------- Bloqueio de rolagem e foco ---------- */
@@ -498,14 +609,15 @@
     ${fotos.length > 1 ? `<div class="miniaturas">${fotos.map((f, i) => `<button type="button" data-mini="${i}" aria-label="Ver foto ${i + 1}" aria-current="${i === 0}"><img src="${esc(f)}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}`;
   }
 
-  function midiaHTML(fotos, nome, video, formato, larga) {
-    const temVideo = !!idYoutube(video);
+  function midiaHTML(fotos, nome, video, formato, larga, capa, comecarPeloVideo = false) {
+    const comVideo = temVideo(video);
+    const primeiro = comVideo && comecarPeloVideo ? 'video' : 'fotos';
     return `<div class="detalhe__midia" data-fotos='${esc(JSON.stringify(fotos))}' data-nome="${esc(nome)}">
-      ${temVideo ? `<div class="alternar-midia" role="group" aria-label="Escolher mídia">
-        <button class="chip" type="button" data-midia="fotos" aria-pressed="true">Fotos (${fotos.length})</button>
-        <button class="chip" type="button" data-midia="video" aria-pressed="false">▶ Vídeo</button></div>` : ''}
-      <div data-painel="fotos">${carrosselHTML(fotos, nome, larga)}</div>
-      ${temVideo ? `<div data-painel="video" data-video="${esc(video)}" data-formato="${esc(formato)}" hidden>${playerHTML(video, nome, formato)}</div>` : ''}
+      ${comVideo ? `<div class="alternar-midia" role="group" aria-label="Escolher mídia">
+        <button class="chip" type="button" data-midia="video" aria-pressed="${primeiro === 'video'}">▶ Vídeo</button>
+        <button class="chip" type="button" data-midia="fotos" aria-pressed="${primeiro === 'fotos'}">Fotos (${fotos.length})</button></div>` : ''}
+      <div data-painel="fotos" ${primeiro === 'fotos' ? '' : 'hidden'}>${carrosselHTML(fotos, nome, larga)}</div>
+      ${comVideo ? `<div data-painel="video" data-video="${esc(video)}" data-formato="${esc(formato)}" data-capa="${esc(capa || '')}" ${primeiro === 'video' ? '' : 'hidden'}>${playerHTML(video, nome, formato, capa)}</div>` : ''}
     </div>`;
   }
 
@@ -516,7 +628,7 @@
     if (!p) return;
     const sel = { cor: p.cores.length ? 0 : -1, tamanho: null, qtd: 1 };
     abrirModal(`<div class="detalhe" data-produto="${esc(p.id)}">
-      ${midiaHTML(p.fotos, p.nome, p.video, p.videoFormato, false)}
+      ${midiaHTML(p.fotos, p.nome, p.video, p.videoFormato, false, p.videoCapa)}
       <div class="detalhe__info">
         <span class="cartao__tipo">${esc(p.tipo)}</span>
         <h2 id="modalTitulo">${esc(p.nome)}</h2>
@@ -580,29 +692,26 @@
   function abrirServico(id) {
     const c = acharServico(id);
     if (!c) return;
-    const noPedido = () => E.carrinho.some((i) => i.tipo === 'servico' && i.id === c.id);
+    const { textos } = E.dados;
     abrirModal(`<div class="detalhe">
-      ${midiaHTML(c.fotos, c.nome, c.video, c.videoFormato, true)}
+      ${midiaHTML(c.fotos, c.nome, c.video, c.videoFormato, true, c.videoCapa, true)}
       <div class="detalhe__info">
         <span class="cartao__tipo">${esc(c.categoria)}</span>
         <h2 id="modalTitulo">${esc(c.nome)}</h2>
-        ${precoHTML(c)}
+        ${precoServicoHTML(c)}
         <div class="detalhe__desc"><p><strong>${esc(c.resumo)}</strong></p>${c.descricao ? `<p>${esc(c.descricao)}</p>` : ''}</div>
+        ${faixasHTML(c)}
         ${c.inclui.length ? `<div class="escolha"><div class="escolha__rotulo">O que está incluído</div><ul class="lista-check">${c.inclui.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
         ${c.prazo ? `<div class="info-linha"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${esc(c.prazo)}</div>` : ''}
-        <button class="btn ${noPedido() ? 'btn--escuro' : 'btn--primario'} btn--bloco" type="button" id="btnServico">${noPedido() ? '✓ Já está no pedido (remover)' : 'Adicionar ao pedido'}</button>
-        <a class="btn btn--zap btn--bloco" href="${esc(linkZap(`Olá! Vim pelo site e quero um orçamento do pacote "${c.nome}".`))}" target="_blank" rel="noopener">Pedir orçamento agora no WhatsApp</a>
-        <button class="btn-texto compartilhar" type="button" data-compartilhar>${ICONE_COMPARTILHAR} Compartilhar pacote</button>
+        ${configuradorHTML(c)}
+        <a class="btn btn--zap btn--bloco" href="${esc(linkZap(`Olá! Vim pelo site e tenho uma dúvida sobre "${c.nome}".`))}" target="_blank" rel="noopener">Tirar dúvidas no WhatsApp</a>
+        ${textos.avisoIA ? `<p class="aviso-ia">${esc(textos.avisoIA)}</p>` : ''}
+        <button class="btn-texto compartilhar" type="button" data-compartilhar>${ICONE_COMPARTILHAR} Compartilhar</button>
       </div>
     </div>`);
     const corpo = $('#modalCorpo');
+    iniciarConfigs(corpo);
     corpo.onclick = (e) => {
-      if (e.target.closest('#btnServico')) {
-        const entrou = alternarServico(c.id);
-        avisar(entrou ? `"${c.nome}" adicionado ao pedido` : `"${c.nome}" removido do pedido`);
-        if (entrou) fecharModal(); else abrirServico(c.id);
-        return;
-      }
       if (e.target.closest('[data-compartilhar]')) compartilhar(c.nome, `${location.origin}/#catalogos/${c.id}`);
     };
   }
@@ -612,8 +721,8 @@
     $$('[data-painel]', corpo).forEach((p) => { p.hidden = p.dataset.painel !== qual; });
     // Ao voltar para as fotos, recria a capa do vídeo para ele parar de tocar
     const painelVideo = $('[data-painel="video"]', corpo);
-    if (qual === 'fotos' && painelVideo && $('iframe', painelVideo)) {
-      painelVideo.innerHTML = playerHTML(painelVideo.dataset.video, corpo.dataset.nome, painelVideo.dataset.formato);
+    if (qual === 'fotos' && painelVideo && $('iframe, video', painelVideo)) {
+      painelVideo.innerHTML = playerHTML(painelVideo.dataset.video, corpo.dataset.nome, painelVideo.dataset.formato, painelVideo.dataset.capa);
     }
   }
 
@@ -662,43 +771,45 @@
 
   /* ---------- Pedido (carrinho) ---------- */
   function salvarCarrinho() { armazenamento.gravar(CHAVE_CARRINHO, E.carrinho); atualizarContador(); }
-  function chave(i) { return `${i.tipo}|${i.id}|${i.cor || ''}|${i.tamanho || ''}`; }
+  function chave(i) { return `${i.tipo}|${i.id}|${i.cor || ''}|${i.tamanho || ''}|${i.opcao || ''}`; }
 
-  function adicionarProduto(id, cor, tamanho, qtd) {
-    const novo = { tipo: 'produto', id, cor, tamanho, qtd };
+  function adicionarItem(novo) {
     const existente = E.carrinho.find((i) => chave(i) === chave(novo));
-    if (existente) existente.qtd = Math.min(99, existente.qtd + qtd);
+    if (existente) existente.qtd = Math.min(QTD_MAX, existente.qtd + novo.qtd);
     else E.carrinho.push(novo);
     salvarCarrinho();
     pularContador();
   }
-  function alternarServico(id) {
-    const idx = E.carrinho.findIndex((i) => i.tipo === 'servico' && i.id === id);
-    if (idx >= 0) E.carrinho.splice(idx, 1);
-    else E.carrinho.push({ tipo: 'servico', id, qtd: 1 });
-    salvarCarrinho();
-    rerenderAbas();
-    if (idx < 0) pularContador();
-    return idx < 0;
-  }
+  const adicionarProduto = (id, cor, tamanho, qtd) => adicionarItem({ tipo: 'produto', id, cor, tamanho, qtd });
+  const adicionarServico = (id, opcao, qtd) => adicionarItem({ tipo: 'servico', id, opcao, qtd });
 
   // Remove do pedido itens que não existem mais no catálogo
   function limparCarrinhoInvalido() {
     E.carrinho = (Array.isArray(E.carrinho) ? E.carrinho : []).filter((i) => i && (i.tipo === 'produto' ? acharProduto(i.id) : acharServico(i.id)))
-      .map((i) => ({ ...i, qtd: Math.min(99, Math.max(1, parseInt(i.qtd, 10) || 1)) }));
+      .map((i) => ({ ...i, qtd: Math.min(QTD_MAX, Math.max(1, parseInt(i.qtd, 10) || 1)) }));
     salvarCarrinho();
   }
 
-  function totais() {
-    let produtos = 0, pecas = 0, semPreco = 0;
-    E.carrinho.forEach((i) => {
-      if (i.tipo !== 'produto') return;
+  // Valor de uma linha do pedido (serviço usa o desconto pela quantidade total daquele serviço)
+  function valorItem(i) {
+    if (i.tipo === 'produto') {
       const p = acharProduto(i.id);
-      pecas += i.qtd;
-      if (p.preco) produtos += p.preco * i.qtd; else semPreco++;
+      return { unit: p.preco, total: p.preco ? p.preco * i.qtd : null };
+    }
+    const c = acharServico(i.id);
+    const unit = precoServico(c, qtdServicoNoPedido(c.id));
+    return { unit, total: unit ? unit * i.qtd : null };
+  }
+
+  function totais() {
+    let produtos = 0, pecas = 0, servicos = 0, linhasServ = 0, semPreco = 0;
+    E.carrinho.forEach((i) => {
+      const v = valorItem(i);
+      if (v.total === null) semPreco++;
+      if (i.tipo === 'produto') { pecas += i.qtd; produtos += v.total || 0; }
+      else { linhasServ++; servicos += v.total || 0; }
     });
-    const servicos = E.carrinho.filter((i) => i.tipo === 'servico').length;
-    return { produtos, pecas, servicos, semPreco, itens: pecas + servicos };
+    return { produtos, pecas, servicos, linhasServ, semPreco, geral: produtos + servicos, itens: pecas + linhasServ };
   }
 
   function atualizarContador() {
@@ -719,33 +830,73 @@
     const linhas = [`Olá, ${loja.nome}! Vim pelo site e quero fazer este pedido:`];
     const prods = E.carrinho.filter((i) => i.tipo === 'produto');
     const servs = E.carrinho.filter((i) => i.tipo === 'servico');
+    if (servs.length) {
+      linhas.push('', '*VÍDEOS E FOTOS COM IA*');
+      servs.forEach((i) => {
+        const c = acharServico(i.id);
+        const v = valorItem(i);
+        const valor = v.total ? (i.qtd > 1 ? `${reais(v.total)} (${reais(v.unit)} cada)` : reais(v.total)) : 'valor a combinar';
+        linhas.push(`• ${nomeQtd(c, i.qtd)} — ${c.nome}${i.opcao ? ` (${i.opcao})` : ''} — ${valor}`);
+      });
+      linhas.push(`*Subtotal vídeos e fotos: ${reais(t.servicos)}*`);
+    }
     if (prods.length) {
       linhas.push('', '*LOJA DRY FIT*');
       prods.forEach((i) => {
         const p = acharProduto(i.id);
+        const v = valorItem(i);
         const variacao = [i.cor, i.tamanho && `tam. ${i.tamanho}`].filter(Boolean).join(', ');
-        const valor = p.preco ? reais(p.preco * i.qtd) : 'preço a consultar';
-        linhas.push(`• ${i.qtd}x ${p.nome}${variacao ? ` (${variacao})` : ''} — ${valor}`);
+        linhas.push(`• ${i.qtd}x ${p.nome}${variacao ? ` (${variacao})` : ''} — ${v.total ? reais(v.total) : 'preço a consultar'}`);
       });
-      linhas.push(`*Total dos produtos: ${reais(t.produtos)}*${t.semPreco ? ' + itens a consultar' : ''}`, 'Frete: a combinar');
+      linhas.push(`*Subtotal loja: ${reais(t.produtos)}*`, 'Frete: a combinar');
     }
-    if (servs.length) {
-      linhas.push('', '*PRODUÇÃO DE VÍDEOS E FOTOS (orçamento)*');
-      servs.forEach((i) => linhas.push(`• ${acharServico(i.id).nome}`));
-    }
+    if (servs.length && prods.length) linhas.push('', `*TOTAL: ${reais(t.geral)}*${prods.length ? ' + frete' : ''}`);
+    if (t.semPreco) linhas.push('(alguns itens com valor a combinar)');
     linhas.push('', `*Nome:* ${cliente.nome}`);
-    if (cliente.cidade) linhas.push(`*Cidade/bairro:* ${cliente.cidade}`);
+    if (cliente.cidade) linhas.push(`*Cidade / loja:* ${cliente.cidade}`);
     if (cliente.obs) linhas.push(`*Observações:* ${cliente.obs}`);
+    if (servs.length) linhas.push('', 'Vou enviar as fotos das peças aqui no WhatsApp.');
     return linhas.join('\n');
+  }
+
+  function linhaItemHTML(i) {
+    const v = valorItem(i);
+    let img, nome, variacao, dica = '';
+    if (i.tipo === 'produto') {
+      const p = acharProduto(i.id);
+      img = (p.cores.find((c) => c.nome === i.cor) || {}).foto || p.fotos[0];
+      nome = `${p.nome}`;
+      variacao = [i.cor, i.tamanho && `Tam. ${i.tamanho}`].filter(Boolean).join(' · ');
+    } else {
+      const c = acharServico(i.id);
+      img = c.fotos[0];
+      nome = c.nome;
+      variacao = [i.opcao, v.unit && `${reais(v.unit)} cada`].filter(Boolean).join(' · ');
+      const prox = proximaFaixa(c, qtdServicoNoPedido(c.id));
+      if (prox && c.preco) {
+        const falta = prox.de - qtdServicoNoPedido(c.id);
+        dica = `<span class="item__dica">Mais ${esc(nomeQtd(c, falta))} e cada um sai por ${reais(prox.preco)}</span>`;
+      }
+    }
+    return `<div class="item"><img src="${esc(img || IMG_FALHA)}" alt="">
+      <div class="item__info"><span class="item__nome">${esc(nome)}</span>
+        ${variacao ? `<span class="item__var">${esc(variacao)}</span>` : ''}
+        <div class="item__linha">
+          <div class="qtd qtd--peq" aria-label="Quantidade de ${esc(nome)}"><button type="button" data-item-qtd="-1" data-chave="${esc(chave(i))}" aria-label="Diminuir">−</button><output>${i.qtd}</output><button type="button" data-item-qtd="1" data-chave="${esc(chave(i))}" aria-label="Aumentar">+</button></div>
+          <strong>${v.total ? reais(v.total) : 'A combinar'}</strong>
+        </div>
+        ${dica}
+        <button class="item__remover" type="button" data-remover="${esc(chave(i))}">Remover</button>
+      </div></div>`;
   }
 
   function renderGaveta() {
     const corpo = $('#gavetaCorpo');
     if (!E.carrinho.length) {
       corpo.innerHTML = `<div class="vazio"><strong>Seu pedido está vazio</strong>
-        <span>Adicione peças da Loja Dry Fit ou pacotes de vídeo e foto dos catálogos.</span>
-        <a class="btn btn--primario" href="#loja" data-fechar-gaveta>Ver Loja Dry Fit</a>
-        <a class="btn btn--contorno" href="#catalogos" data-fechar-gaveta>Ver catálogos</a></div>`;
+        <span>Escolha quantos vídeos e fotos com IA você quer, ou peças da Loja Dry Fit.</span>
+        <a class="btn btn--primario" href="#catalogos" data-fechar-gaveta>Escolher vídeos e fotos</a>
+        <a class="btn btn--contorno" href="#loja" data-fechar-gaveta>Ver Loja Dry Fit</a></div>`;
       return;
     }
     const t = totais();
@@ -753,37 +904,21 @@
     const prods = E.carrinho.filter((i) => i.tipo === 'produto');
     const servs = E.carrinho.filter((i) => i.tipo === 'servico');
     corpo.innerHTML = `
-      ${prods.length ? `<div class="grupo-pedido"><h3>Loja Dry Fit</h3>${prods.map((i) => {
-        const p = acharProduto(i.id);
-        const foto = (p.cores.find((c) => c.nome === i.cor) || {}).foto || p.fotos[0] || IMG_FALHA;
-        return `<div class="item"><img src="${esc(foto)}" alt="">
-          <div class="item__info"><span class="item__nome">${esc(p.nome)}</span>
-            <span class="item__var">${esc([i.cor, i.tamanho && `Tam. ${i.tamanho}`].filter(Boolean).join(' · '))}</span>
-            <div class="item__linha">
-              <div class="qtd qtd--peq" aria-label="Quantidade de ${esc(p.nome)}"><button type="button" data-item-qtd="-1" data-chave="${esc(chave(i))}" aria-label="Diminuir">−</button><output>${i.qtd}</output><button type="button" data-item-qtd="1" data-chave="${esc(chave(i))}" aria-label="Aumentar">+</button></div>
-              <strong>${p.preco ? reais(p.preco * i.qtd) : 'Consultar'}</strong>
-            </div>
-            <button class="item__remover" type="button" data-remover="${esc(chave(i))}">Remover</button>
-          </div></div>`;
-      }).join('')}</div>` : ''}
-      ${servs.length ? `<div class="grupo-pedido"><h3>Vídeos e fotos (orçamento)</h3>${servs.map((i) => {
-        const c = acharServico(i.id);
-        return `<div class="item"><img src="${esc(c.fotos[0] || IMG_FALHA)}" alt="">
-          <div class="item__info"><span class="item__nome">${esc(c.nome)}</span><span class="item__var">${c.preco ? reais(c.preco) : 'Valor sob consulta'}</span>
-            <button class="item__remover" type="button" data-remover="${esc(chave(i))}">Remover</button></div></div>`;
-      }).join('')}</div>` : ''}
+      ${servs.length ? `<div class="grupo-pedido"><h3>Vídeos e fotos com IA</h3>${servs.map(linhaItemHTML).join('')}</div>` : ''}
+      ${prods.length ? `<div class="grupo-pedido"><h3>Loja Dry Fit</h3>${prods.map(linhaItemHTML).join('')}</div>` : ''}
       <div class="resumo">
-        ${prods.length ? `<div class="resumo__linha"><span>Produtos (${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'})</span><span>${reais(t.produtos)}</span></div>
-        <div class="resumo__linha"><span>Frete</span><span>A combinar</span></div>
-        <div class="resumo__linha resumo__total"><span>Total</span><span>${reais(t.produtos)}</span></div>` : ''}
-        ${servs.length ? `<small>Os pacotes de vídeo e foto são orçados no atendimento pelo WhatsApp.</small>` : ''}
-        ${t.semPreco ? `<small>Alguns itens têm preço a consultar.</small>` : ''}
+        ${servs.length ? `<div class="resumo__linha"><span>Vídeos e fotos</span><span>${reais(t.servicos)}</span></div>` : ''}
+        ${prods.length ? `<div class="resumo__linha"><span>Loja (${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'})</span><span>${reais(t.produtos)}</span></div>
+        <div class="resumo__linha"><span>Frete da loja</span><span>A combinar</span></div>` : ''}
+        <div class="resumo__linha resumo__total"><span>Total</span><span>${reais(t.geral)}</span></div>
+        ${servs.length ? `<small>Depois de enviar o pedido, mande as fotos das suas peças pelo WhatsApp.</small>` : ''}
+        ${t.semPreco ? `<small>Alguns itens têm valor a combinar.</small>` : ''}
       </div>
       <form class="form-pedido" id="formPedido" novalidate>
         <label><div>Seu nome</div><input class="campo" name="nome" autocomplete="name" required maxlength="80" value="${esc(cliente.nome)}"></label>
         <span class="erro-campo" id="erroNome" hidden>Digite seu nome para enviarmos o pedido.</span>
-        <label><div>Cidade / bairro <small>(para calcular o frete)</small></div><input class="campo" name="cidade" autocomplete="address-level2" maxlength="80" value="${esc(cliente.cidade)}"></label>
-        <label><div>Observações <small>(opcional)</small></div><textarea class="campo" name="obs" maxlength="500" placeholder="Ex.: prefiro retirar pessoalmente"></textarea></label>
+        <label><div>Cidade ${servs.length ? '/ nome da loja ' : ''}<small>(opcional)</small></div><input class="campo" name="cidade" autocomplete="address-level2" maxlength="80" value="${esc(cliente.cidade)}"></label>
+        <label><div>Observações <small>(opcional)</small></div><textarea class="campo" name="obs" maxlength="500" placeholder="${servs.length ? 'Ex.: quero vídeos para a coleção de jeans' : 'Ex.: prefiro retirar pessoalmente'}"></textarea></label>
         <button class="btn btn--zap btn--bloco" type="submit">
           <svg viewBox="0 0 32 32" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3z"/></svg>
           Enviar pedido pelo WhatsApp</button>
@@ -859,7 +994,7 @@
     const aviso = $('#avisoInstalar');
     const btn = $('#btnInstalar');
     if (E.instalarEvento) {
-      $('#instalarDica').textContent = 'Acesso rápido aos catálogos e à loja, direto da tela inicial.';
+      $('#instalarDica').textContent = 'Acesso rápido ao catálogo e à loja, direto da tela inicial.';
       btn.textContent = 'Instalar';
       btn.dataset.modo = 'prompt';
     } else if (ehIOS()) {
@@ -897,6 +1032,9 @@
 
   /* ---------- Eventos globais ---------- */
   function ligarEventos() {
+    // Bloqueia o zoom com dois dedos (iPhone ignora a meta viewport)
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
     window.addEventListener('hashchange', irPara);
 
     document.addEventListener('click', (e) => {
@@ -905,10 +1043,22 @@
       if ((el = alvo.closest('.player__capa'))) { tocarVideo(el); return; }
       if ((el = alvo.closest('[data-abrir-produto]'))) { navegarParaItem(el.dataset.abrirProduto); return; }
       if ((el = alvo.closest('[data-abrir-servico]'))) { navegarParaItem(el.dataset.abrirServico); return; }
-      if ((el = alvo.closest('[data-alternar-servico]'))) {
-        const c = acharServico(el.dataset.alternarServico);
-        const entrou = alternarServico(c.id);
-        avisar(entrou ? `"${c.nome}" adicionado ao pedido` : `"${c.nome}" removido do pedido`);
+      if ((el = alvo.closest('[data-config-qtd]')) || (el = alvo.closest('[data-config-rapida]'))) {
+        const box = el.closest('[data-config]');
+        const input = $('[data-config-valor]', box);
+        const atual = lerQtdConfig(box);
+        input.value = el.dataset.configRapida ? Number(el.dataset.configRapida) : Math.min(QTD_MAX, Math.max(1, atual + Number(el.dataset.configQtd)));
+        atualizarConfig(box);
+        return;
+      }
+      if ((el = alvo.closest('[data-config-adicionar]'))) {
+        const box = el.closest('[data-config]');
+        const c = acharServico(box.dataset.config);
+        const qtd = lerQtdConfig(box);
+        const sel = $('[data-config-opcao]', box);
+        adicionarServico(c.id, sel ? sel.value : '', qtd);
+        avisar(`Adicionado ao pedido: ${nomeQtd(c, qtd)}`);
+        if (box.closest('#modal')) fecharModal();
         return;
       }
       if ((el = alvo.closest('[data-filtro]'))) {
@@ -954,17 +1104,17 @@
       if (alvo.closest('[data-fechar-gaveta]')) { fecharGaveta(); return; }
       if ((el = alvo.closest('[data-item-qtd]'))) {
         const item = E.carrinho.find((i) => chave(i) === el.dataset.chave);
-        if (item) { item.qtd = Math.min(99, Math.max(1, item.qtd + Number(el.dataset.itemQtd))); salvarCarrinho(); renderGaveta(); }
+        if (item) { item.qtd = Math.min(QTD_MAX, Math.max(1, item.qtd + Number(el.dataset.itemQtd))); salvarCarrinho(); renderGaveta(); }
         return;
       }
       if ((el = alvo.closest('[data-remover]'))) {
         E.carrinho = E.carrinho.filter((i) => chave(i) !== el.dataset.remover);
-        salvarCarrinho(); rerenderAbas(); renderGaveta(); avisar('Item removido');
+        salvarCarrinho(); renderGaveta(); avisar('Item removido');
         return;
       }
       if ((el = alvo.closest('[data-esvaziar]'))) {
         if (el.dataset.esvaziar !== 'confirmado' && !window.confirm('Tirar todos os itens do pedido?')) return;
-        E.carrinho = []; salvarCarrinho(); rerenderAbas(); renderGaveta();
+        E.carrinho = []; salvarCarrinho(); renderGaveta();
         avisar('Pedido limpo');
         return;
       }
@@ -983,10 +1133,12 @@
         clearTimeout(E.timerBusca);
         E.timerBusca = setTimeout(atualizarGradeLoja, 150);
       }
+      if (e.target.matches('[data-config-valor]')) atualizarConfig(e.target.closest('[data-config]'));
       if (e.target.name === 'nome' && e.target.closest('#formPedido')) $('#erroNome').hidden = true;
     });
     document.addEventListener('change', (e) => {
       if (e.target.id === 'ordemLoja') { E.ordem = e.target.value; atualizarGradeLoja(); }
+      if (e.target.matches('[data-config-valor]')) { e.target.value = lerQtdConfig(e.target.closest('[data-config]')); atualizarConfig(e.target.closest('[data-config]')); }
     });
 
     // Atualiza as miniaturas conforme a foto visível no carrossel
@@ -1035,7 +1187,7 @@
 
     // Sincroniza o pedido entre abas do navegador
     window.addEventListener('storage', (e) => {
-      if (e.key === CHAVE_CARRINHO) { E.carrinho = armazenamento.ler(CHAVE_CARRINHO, []); limparCarrinhoInvalido(); rerenderAbas(); if (!$('#gaveta').hidden) renderGaveta(); }
+      if (e.key === CHAVE_CARRINHO) { E.carrinho = armazenamento.ler(CHAVE_CARRINHO, []); limparCarrinhoInvalido(); if (!$('#gaveta').hidden) renderGaveta(); }
     });
   }
 
