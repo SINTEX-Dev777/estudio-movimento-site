@@ -824,39 +824,72 @@
     el.classList.remove('pulo'); void el.offsetWidth; el.classList.add('pulo');
   }
 
-  function montarMensagem(cliente) {
+  // Código do pedido: JC + dia/mês + hora/minuto + 2 letras (ex.: JC2410-1532-K7)
+  function gerarCodigoPedido(data = new Date()) {
+    const d2 = (n) => String(n).padStart(2, '0');
+    const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const sorteio = Array.from({ length: 2 }, () => letras[Math.floor(Math.random() * letras.length)]).join('');
+    return `JC${d2(data.getDate())}${d2(data.getMonth() + 1)}-${d2(data.getHours())}${d2(data.getMinutes())}-${sorteio}`;
+  }
+
+  // Relatório do pedido que chega no WhatsApp do Julian (pedindo a chave Pix)
+  function montarMensagem(cliente, codigo = gerarCodigoPedido(), data = new Date()) {
     const { loja } = E.dados;
     const t = totais();
-    const linhas = [`Olá, ${loja.nome}! Vim pelo site e quero fazer este pedido:`];
+    const LINHA = '━━━━━━━━━━━━━━━━';
+    const quando = data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const prods = E.carrinho.filter((i) => i.tipo === 'produto');
     const servs = E.carrinho.filter((i) => i.tipo === 'servico');
+    let n = 0;
+    let economia = 0;
+    const L = [
+      `*NOVO PEDIDO PELO SITE — ${loja.nome.toUpperCase()}*`,
+      `Pedido: *#${codigo}*`,
+      `Data: ${quando}`,
+      LINHA,
+      '',
+      '*CLIENTE*',
+      `Nome: ${cliente.nome}`,
+    ];
+    if (cliente.cidade) L.push(`Cidade / loja: ${cliente.cidade}`);
+
     if (servs.length) {
-      linhas.push('', '*VÍDEOS E FOTOS COM IA*');
+      L.push('', '*VÍDEOS E FOTOS COM IA*');
       servs.forEach((i) => {
         const c = acharServico(i.id);
         const v = valorItem(i);
-        const valor = v.total ? (i.qtd > 1 ? `${reais(v.total)} (${reais(v.unit)} cada)` : reais(v.total)) : 'valor a combinar';
-        linhas.push(`• ${nomeQtd(c, i.qtd)} — ${c.nome}${i.opcao ? ` (${i.opcao})` : ''} — ${valor}`);
+        if (v.total && c.preco) economia += c.preco * i.qtd - v.total;
+        L.push(`${++n}) ${c.nome}`);
+        if (i.opcao) L.push(`    Formato: ${i.opcao}`);
+        L.push(v.total
+          ? `    Quantidade: ${nomeQtd(c, i.qtd)} × ${reais(v.unit)}`
+          : `    Quantidade: ${nomeQtd(c, i.qtd)}`);
+        L.push(`    Valor: ${v.total ? reais(v.total) : 'a combinar'}`);
       });
-      linhas.push(`*Subtotal vídeos e fotos: ${reais(t.servicos)}*`);
+      L.push(`Subtotal vídeos e fotos: *${reais(t.servicos)}*`);
     }
+
     if (prods.length) {
-      linhas.push('', '*LOJA DRY FIT*');
+      L.push('', '*LOJA DRY FIT*');
       prods.forEach((i) => {
         const p = acharProduto(i.id);
         const v = valorItem(i);
-        const variacao = [i.cor, i.tamanho && `tam. ${i.tamanho}`].filter(Boolean).join(', ');
-        linhas.push(`• ${i.qtd}x ${p.nome}${variacao ? ` (${variacao})` : ''} — ${v.total ? reais(v.total) : 'preço a consultar'}`);
+        L.push(`${++n}) ${p.nome}`);
+        const variacao = [i.cor && `Cor: ${i.cor}`, i.tamanho && `Tamanho: ${i.tamanho}`].filter(Boolean).join(' · ');
+        if (variacao) L.push(`    ${variacao}`);
+        L.push(v.total ? `    Quantidade: ${i.qtd} × ${reais(v.unit)}` : `    Quantidade: ${i.qtd}`);
+        L.push(`    Valor: ${v.total ? reais(v.total) : 'a consultar'}`);
       });
-      linhas.push(`*Subtotal loja: ${reais(t.produtos)}*`, 'Frete: a combinar');
+      L.push(`Subtotal loja: *${reais(t.produtos)}*`, 'Frete: a combinar');
     }
-    if (servs.length && prods.length) linhas.push('', `*TOTAL: ${reais(t.geral)}*${prods.length ? ' + frete' : ''}`);
-    if (t.semPreco) linhas.push('(alguns itens com valor a combinar)');
-    linhas.push('', `*Nome:* ${cliente.nome}`);
-    if (cliente.cidade) linhas.push(`*Cidade / loja:* ${cliente.cidade}`);
-    if (cliente.obs) linhas.push(`*Observações:* ${cliente.obs}`);
-    if (servs.length) linhas.push('', 'Vou enviar as fotos das peças aqui no WhatsApp.');
-    return linhas.join('\n');
+
+    L.push('', LINHA, `*TOTAL DO PEDIDO: ${reais(t.geral)}*${prods.length ? ' + frete' : ''}`);
+    if (economia > 0) L.push(`Desconto por quantidade já aplicado: ${reais(economia)}`);
+    if (t.semPreco) L.push('Obs.: alguns itens têm valor a combinar.');
+    L.push(LINHA, '', '*PAGAMENTO: PIX*', 'Pode me enviar a chave Pix para eu fazer o pagamento?');
+    if (cliente.obs) L.push('', '*OBSERVAÇÕES*', cliente.obs);
+    if (servs.length) L.push('', 'Vou enviar as fotos das peças aqui no WhatsApp.');
+    return L.join('\n');
   }
 
   function linhaItemHTML(i) {
@@ -911,7 +944,8 @@
         ${prods.length ? `<div class="resumo__linha"><span>Loja (${t.pecas} ${t.pecas === 1 ? 'peça' : 'peças'})</span><span>${reais(t.produtos)}</span></div>
         <div class="resumo__linha"><span>Frete da loja</span><span>A combinar</span></div>` : ''}
         <div class="resumo__linha resumo__total"><span>Total</span><span>${reais(t.geral)}</span></div>
-        ${servs.length ? `<small>Depois de enviar o pedido, mande as fotos das suas peças pelo WhatsApp.</small>` : ''}
+        <div class="resumo__linha"><span>Pagamento</span><span>Pix</span></div>
+        <small>Você envia o pedido pelo WhatsApp e recebe a chave Pix para pagar.${servs.length ? ' Depois, é só mandar as fotos das suas peças.' : ''}</small>
         ${t.semPreco ? `<small>Alguns itens têm valor a combinar.</small>` : ''}
       </div>
       <form class="form-pedido" id="formPedido" novalidate>
@@ -921,7 +955,7 @@
         <label><div>Observações <small>(opcional)</small></div><textarea class="campo" name="obs" maxlength="500" placeholder="${servs.length ? 'Ex.: quero vídeos para a coleção de jeans' : 'Ex.: prefiro retirar pessoalmente'}"></textarea></label>
         <button class="btn btn--zap btn--bloco" type="submit">
           <svg viewBox="0 0 32 32" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3z"/></svg>
-          Enviar pedido pelo WhatsApp</button>
+          Enviar pedido e pedir o Pix</button>
         <button class="btn-texto" type="button" data-esvaziar>Esvaziar pedido</button>
       </form>`;
   }
@@ -946,13 +980,16 @@
     armazenamento.gravar(CHAVE_CLIENTE, { nome: cliente.nome, cidade: cliente.cidade });
     const numero = soDigitos(E.dados.loja.whatsapp);
     if (numero.length < 12) { avisar('O WhatsApp da loja não está configurado corretamente.'); return; }
-    const url = linkZap(montarMensagem(cliente));
-    const janela = window.open(url, '_blank', 'noopener');
-    if (!janela) location.href = url;
-    // Depois de enviar, oferece limpar o pedido
+    const codigo = gerarCodigoPedido();
+    const url = linkZap(montarMensagem(cliente, codigo));
+    // Obs.: com 'noopener' o window.open sempre devolve null; por isso abrimos normal e cortamos o vínculo
+    const janela = window.open(url, '_blank');
+    if (janela) { try { janela.opener = null; } catch { /* ignora */ } } else location.href = url;
+    // Depois de enviar, mostra o código e oferece limpar o pedido
     const corpo = $('#gavetaCorpo');
-    corpo.insertAdjacentHTML('afterbegin', `<div class="resumo" id="avisoEnviado"><strong>Pedido aberto no WhatsApp ✓</strong>
-      <small>Confira a mensagem e toque em enviar. Se já enviou, pode limpar o pedido.</small>
+    $('#avisoEnviado')?.remove();
+    corpo.insertAdjacentHTML('afterbegin', `<div class="resumo" id="avisoEnviado"><strong>Pedido #${esc(codigo)} aberto no WhatsApp ✓</strong>
+      <small>Confira a mensagem e toque em enviar. O Julian responde com a chave Pix para o pagamento.</small>
       <button class="btn btn--contorno btn--peq" type="button" data-esvaziar="confirmado">Já enviei, limpar pedido</button></div>`);
     corpo.scrollTop = 0;
   }
@@ -1218,7 +1255,7 @@
   }
 
   // Exposto só para testes automáticos
-  window.__site = { idYoutube, paraCentavos, reais, formatarFone, montarMensagem: (c) => montarMensagem(c), estado: E };
+  window.__site = { idYoutube, paraCentavos, reais, formatarFone, gerarCodigoPedido, montarMensagem: (c, cod, d) => montarMensagem(c, cod, d ? new Date(d) : undefined), estado: E };
 
   iniciar();
 })();

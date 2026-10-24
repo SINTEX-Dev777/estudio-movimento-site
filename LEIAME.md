@@ -99,8 +99,11 @@ Ficam em `textos` (no `catalogo.json`): título, destaque em verde, passos do "C
 ---
 
 ## Como o pedido funciona
-O cliente escolhe quantos vídeos/fotos (e/ou peças da loja), digita o nome e toca em **Enviar pedido pelo WhatsApp**.
-Abre o WhatsApp com a mensagem pronta: quantidades, formatos, preço de cada um, subtotais, total e frete "a combinar" (só da loja).
+O cliente escolhe quantos vídeos/fotos (e/ou peças da loja), digita o nome e toca em **Enviar pedido e pedir o Pix**.
+Abre o WhatsApp do Julian (+55 83 99107-0515) com um **relatório pronto**: código do pedido (ex.: #JC2410-1532-K7),
+data e hora, dados do cliente, cada item numerado (formato, quantidade × preço, valor), subtotais, total,
+desconto por quantidade já aplicado, frete "a combinar" (só da loja) e o pedido da **chave Pix** para pagamento.
+O número fica em `dados/catalogo.json` → `loja.whatsapp` (só números, com 55 + DDD).
 O pedido fica salvo no aparelho do cliente até ele limpar.
 
 ## Zoom
