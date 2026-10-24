@@ -1,0 +1,22 @@
+# Regras do Cloudflare Pages (segurança e cache)
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src https://www.youtube-nocookie.com https://www.youtube.com; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'
+
+/dados/*
+  Cache-Control: no-cache
+
+/sw.js
+  Cache-Control: no-cache
+
+/css/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/js/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/imagens/*
+  Cache-Control: public, max-age=86400

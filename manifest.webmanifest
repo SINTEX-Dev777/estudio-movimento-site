@@ -1,0 +1,23 @@
+{
+  "name": "Estúdio Movimento — Vídeos, Fotos e Loja Dry Fit",
+  "short_name": "Movimento",
+  "description": "Catálogos de vídeos e fotos para moda e loja de camisas e shorts Dry Fit.",
+  "lang": "pt-BR",
+  "id": "/",
+  "start_url": "/?origem=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E0F12",
+  "theme_color": "#0E0F12",
+  "categories": ["shopping", "lifestyle", "photo"],
+  "icons": [
+    { "src": "/icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icones/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Loja Dry Fit", "url": "/#loja", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] },
+    { "name": "Catálogos", "url": "/#catalogos", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] }
+  ]
+}
