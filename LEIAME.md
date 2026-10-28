@@ -1,9 +1,8 @@
-# Julian Carlos — vídeos e fotos com IA + Loja Dry Fit
+# Julian Carlos — vídeos e fotos com IA
 
 Site "dois em um":
 - **Vídeos e fotos com IA:** abas **Catálogo IA**, **Fotos** e **Vídeos**. O cliente escolhe **quantos vídeos e quantas fotos** quer,
   o formato de cada um, e vê o preço na hora (com desconto por quantidade).
-- **Loja Dry Fit (loja pessoal):** camisas e shorts com fotos, vídeo, explicação, cor, tamanho e pedido pelo WhatsApp.
 - **Instalável no celular** (Android e iPhone) e abre mesmo sem internet (menos os vídeos).
 
 Hospedagem: **Cloudflare Pages** (grátis), ligada a este repositório do **GitHub**.
@@ -47,17 +46,6 @@ _headers                segurança e cache (Cloudflare)
 | `instagram` | `"juliancarlos"` | sem @ |
 | `demonstracao` | `true` | mude para `false` para tirar a faixa "Modo demonstração" |
 
-### Adicionar um produto (Loja Dry Fit)
-Copie um produto inteiro (de `{` até `}`), cole depois dele com uma vírgula e mude:
-- `id`: nome curto sem espaço nem acento (ex.: `"camisa-nova"`) — vira o link do produto.
-- `tipo`: `"Camisa"` ou `"Short"` (cria os filtros sozinho).
-- `preco` e `precoAntigo`: use ponto nos centavos (`59.90`). `precoAntigo: null` = sem promoção.
-  Sem preço (`null`) aparece "Consulte".
-- `resumo`: explicação curta que aparece **embaixo do produto**.
-- `descricao` e `destaques`: aparecem ao abrir o produto.
-- `cores`: nome, cor (`hex`) e a foto daquela cor.
-- `video`: link do YouTube (veja abaixo). `"disponivel": false` mostra "Esgotado".
-
 ### Adicionar fotos
 1. No GitHub, abra a pasta `imagens` → **Add file → Upload files** → arraste as fotos → **Commit changes**.
 2. No `catalogo.json`, use o caminho: `"imagens/nome-da-foto.jpg"`.
@@ -73,6 +61,13 @@ Limite do Cloudflare Pages: 25 MB por arquivo. Nomes sem espaço e sem acento.
 
 > Os 4 vídeos de jeans atuais são **animações de teste** (ilustração), só para ver o site funcionando.
 > Troque pelos vídeos reais feitos com IA.
+
+### Vídeos de exemplo (YouTube Shorts) — como está configurado hoje
+Os 6 exemplos (3 Essencial R$ 30 e 3 Premium R$ 40) ficam em `videos` no `catalogo.json`, cada um com
+título, descrição (a legenda que aparece embaixo do vídeo), `servico` (estilo/preço), `duracao` e `capa`.
+Os links dos 6 Shorts (canal do Julian) já estão preenchidos. Se o campo `"video"` ficar vazio, aparece a capa com "Vídeo em breve".
+Para ativar: poste como **Short não listado** (nunca "privado"), com "Permitir incorporação" ligado e
+"Não é conteúdo para crianças", e cole o link em `"video"`. O vídeo toca dentro do site, com som.
 
 ### Adicionar vídeos do YouTube (não listado) — para vídeos grandes
 1. No YouTube, envie o vídeo e escolha visibilidade **Não listado** (só quem tem o link vê).
@@ -106,6 +101,9 @@ desconto por quantidade já aplicado, frete "a combinar" (só da loja) e o pedid
 O número fica em `dados/catalogo.json` → `loja.whatsapp` (só números, com 55 + DDD).
 O pedido fica salvo no aparelho do cliente até ele limpar.
 
+## Sem endereço
+O trabalho é 100% digital: o site não mostra endereço nem cidade (`loja.cidade` vazio).
+
 ## Zoom
 O zoom com dois dedos e o duplo toque estão desligados de propósito (site se comporta como app).
 
@@ -117,6 +115,12 @@ O zoom com dois dedos e o duplo toque estão desligados de propósito (site se c
 - O GitHub guarda **todas as versões** (History). Nada se perde; dá para voltar qualquer alteração.
 - Para uma cópia no computador: botão **Code → Download ZIP**.
 - O site não guarda dados de clientes em servidor: o pedido vai direto pelo WhatsApp.
+
+## Logo
+Símbolo "JC" (C em anel verde-lima + J + brilho de IA) e nome em Barlow Condensed.
+Arquivos no site: `icones/` (ícone do app e da aba) e `imagens/logo/` (versões horizontal clara/escura e vertical).
+`imagens/og-imagem.png` é a imagem que aparece quando o link é compartilhado no WhatsApp.
+O kit completo (PNG e SVG, foto de perfil 1080 px) fica na pasta `logo-julian-carlos`.
 
 ## Mudar cores e fontes
 No topo de `css/estilo.css`: `--acento` (verde-lima), `--fonte-titulo` e `--fonte-texto`.

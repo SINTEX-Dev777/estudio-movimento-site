@@ -4,16 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Julian Carlos | Vídeos e fotos com IA para lojas de roupa</title>
-  <meta name="description" content="Vídeos e fotos com modelos de inteligência artificial vestindo as roupas da sua loja, prontos para anúncios. Escolha quantos quer e peça pelo WhatsApp. Também Loja Dry Fit.">
+  <meta name="description" content="Vídeos e fotos com modelos de inteligência artificial vestindo as roupas da sua loja, prontos para anúncios. Escolha o estilo e a quantidade e peça pelo WhatsApp.">
   <meta name="theme-color" content="#0E0F12">
 
   <!-- Compartilhamento (WhatsApp, Instagram, Facebook) -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Julian Carlos | Vídeos e fotos com IA para lojas de roupa">
   <meta property="og:description" content="Modelos de IA vestindo as roupas da sua loja, em vídeos e fotos prontos para anúncio. Você escolhe quantos quer.">
-  <meta property="og:image" content="/icones/icone-512.png">
+  <meta property="og:image" content="https://estudio-movimento-site.pages.dev/imagens/og-imagem.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:locale" content="pt_BR">
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
 
   <!-- Ícones e instalação no celular -->
   <link rel="icon" href="/icones/favicon.svg" type="image/svg+xml">
@@ -35,8 +37,7 @@
     "@context": "https://schema.org",
     "@type": "Store",
     "name": "Julian Carlos",
-    "description": "Vídeos e fotos com modelos de IA para lojas de roupa e loja de roupas Dry Fit.",
-    "address": { "@type": "PostalAddress", "addressLocality": "Boqueirão", "addressRegion": "PB", "addressCountry": "BR" },
+    "description": "Vídeos e fotos com modelos de IA para lojas de roupa. Atendimento 100% online.",
     "areaServed": "BR"
   }
   </script>
@@ -51,16 +52,15 @@
   <header class="topo">
     <div class="topo__in">
       <a class="marca" href="#inicio" aria-label="Ir para o início">
-        <img src="/icones/favicon.svg" alt="" width="34" height="34">
+        <img src="/icones/favicon.svg" alt="" width="38" height="38">
         <span class="marca__nome" id="marcaNome">Julian Carlos</span>
       </a>
 
       <nav class="abas" aria-label="Seções do site">
         <a href="#inicio" data-aba="inicio">Início</a>
         <a href="#catalogos" data-aba="catalogos">Catálogo IA</a>
-        <a href="#fotos" data-aba="fotos">Fotos</a>
         <a href="#videos" data-aba="videos">Vídeos</a>
-        <a href="#loja" data-aba="loja" class="abas__loja">Loja Dry Fit</a>
+        <a href="#fotos" data-aba="fotos">Fotos</a>
       </nav>
 
       <div class="topo__acoes">
@@ -88,7 +88,6 @@
     <section class="aba" id="aba-catalogos" data-aba-conteudo="catalogos" hidden></section>
     <section class="aba" id="aba-fotos" data-aba-conteudo="fotos" hidden></section>
     <section class="aba" id="aba-videos" data-aba-conteudo="videos" hidden></section>
-    <section class="aba" id="aba-loja" data-aba-conteudo="loja" hidden></section>
   </main>
 
   <footer class="rodape" id="rodape"></footer>
@@ -97,9 +96,8 @@
   <nav class="nav-baixo" aria-label="Seções do site (celular)">
     <a href="#inicio" data-aba="inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><span>Início</span></a>
     <a href="#catalogos" data-aba="catalogos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Catálogo</span></a>
-    <a href="#fotos" data-aba="fotos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg><span>Fotos</span></a>
     <a href="#videos" data-aba="videos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg><span>Vídeos</span></a>
-    <a href="#loja" data-aba="loja"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4 4 6.5 5.5 10 7 9.3V20h10V9.3l1.5.7L20 6.5 16 4a4 4 0 0 1-8 0z"/></svg><span>Loja</span></a>
+    <a href="#fotos" data-aba="fotos"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg><span>Fotos</span></a>
   </nav>
 
   <!-- Botão flutuante de WhatsApp -->
@@ -154,7 +152,7 @@
     <img src="/icones/icone-192.png" alt="" width="48" height="48">
     <div class="instalar__texto">
       <strong id="instalarTitulo">Instale o app no seu celular</strong>
-      <span id="instalarDica">Acesso rápido ao catálogo e à loja, direto da tela inicial.</span>
+      <span id="instalarDica">Acesso rápido ao catálogo de vídeos, direto da tela inicial.</span>
     </div>
     <div class="instalar__acoes">
       <button class="btn btn--primario btn--peq" type="button" id="btnInstalar">Instalar</button>
@@ -164,7 +162,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <noscript><p class="noscript">Ative o JavaScript do navegador para ver os catálogos e a loja.</p></noscript>
+  <noscript><p class="noscript">Ative o JavaScript do navegador para ver o catálogo de vídeos.</p></noscript>
 
   <script src="/js/app.js" defer></script>
 </body>

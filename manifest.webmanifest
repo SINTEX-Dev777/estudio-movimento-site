@@ -1,7 +1,7 @@
 {
   "name": "Julian Carlos — Vídeos e Fotos com IA",
   "short_name": "Julian Carlos",
-  "description": "Vídeos e fotos com modelos de IA para lojas de roupa, e Loja Dry Fit.",
+  "description": "Vídeos e fotos com modelos de IA para lojas de roupa.",
   "lang": "pt-BR",
   "id": "/",
   "start_url": "/?origem=app",
@@ -10,14 +10,51 @@
   "orientation": "portrait",
   "background_color": "#0E0F12",
   "theme_color": "#0E0F12",
-  "categories": ["shopping", "lifestyle", "photo"],
+  "categories": [
+    "shopping",
+    "lifestyle",
+    "photo"
+  ],
   "icons": [
-    { "src": "/icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icones/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icones/icone-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Loja Dry Fit", "url": "/#loja", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] },
-    { "name": "Catálogo IA", "url": "/#catalogos", "icons": [{ "src": "/icones/icone-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Catálogo IA",
+      "url": "/#catalogos",
+      "icons": [
+        {
+          "src": "/icones/icone-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Vídeos",
+      "url": "/#videos",
+      "icons": [
+        {
+          "src": "/icones/icone-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

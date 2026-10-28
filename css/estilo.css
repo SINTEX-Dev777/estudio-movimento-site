@@ -127,7 +127,7 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .nav-baixo {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   height: calc(var(--nav-baixo-alt) + var(--seguro-baixo)); padding-bottom: var(--seguro-baixo);
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   background: color-mix(in srgb, var(--superficie) 92%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--borda);
@@ -530,3 +530,25 @@ select.campo { width: auto; cursor: pointer; }
 .player video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; object-fit: contain; }
 .cartao__midia video { width: 100%; height: 100%; object-fit: cover; object-position: center 22%; display: block; }
 .cartao__midia--larga img { object-position: center 22%; }
+
+/* ---------- Legenda dos vídeos (preço e descrição) ---------- */
+.video__info { display: grid; gap: 8px; padding: 14px; }
+.video__preco { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.video__preco strong { font-family: var(--fonte-titulo); font-size: 26px; line-height: 1; }
+.video__preco span:last-child { color: var(--texto-2); font-size: 13px; }
+.video__estilo { align-self: center; padding: 3px 10px; border-radius: 999px; background: var(--acento); color: var(--sobre-acento); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+.video__info h3 { font-size: 19px; }
+.video__info p { margin: 0; line-height: 1.5; }
+.video__fichas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.video__fichas li { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--superficie-2); color: var(--texto-2); }
+.video__info .btn { margin-top: 4px; }
+.exemplos { margin-top: 40px; }
+.player__embreve--capa img { opacity: 1; }
+.player__embreve--capa::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.75)); }
+.player__embreve--capa strong, .player__embreve--capa span { z-index: 1; }
+@media (max-width: 480px) { .video__info { padding: 12px; } .video__info h3 { font-size: 17px; } .video__preco strong { font-size: 22px; } }
+.player__embreve--capa { padding-bottom: 18px !important; }
+.player__embreve--capa strong { font-size: 18px; }
+.player__embreve--capa span { font-size: 12px; }
+.rodape__logo img { width: 240px; height: auto; margin-bottom: 12px; }
+.marca img { border-radius: 10px; }

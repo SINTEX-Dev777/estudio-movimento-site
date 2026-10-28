@@ -1,13 +1,13 @@
 /* =========================================================
    Julian Carlos — app.js
-   Site de catálogos (vídeos/fotos) + Loja Dry Fit
+   Site de vídeos e fotos com IA (catálogo + pedido pelo WhatsApp)
    Os dados vêm de /dados/catalogo.json (edite lá, não aqui).
    ========================================================= */
 (() => {
   'use strict';
 
-  const ABAS = ['inicio', 'catalogos', 'fotos', 'videos', 'loja'];
-  const TITULOS = { inicio: '', catalogos: 'Catálogo IA', fotos: 'Fotos', videos: 'Vídeos', loja: 'Loja Dry Fit' };
+  const ABAS = ['inicio', 'catalogos', 'videos', 'fotos'];
+  const TITULOS = { inicio: '', catalogos: 'Catálogo IA', fotos: 'Fotos', videos: 'Vídeos' };
   const QTD_MAX = 999;
   const MOVIMENTO_REDUZIDO = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const CHAVE_CARRINHO = 'em.carrinho.v1';
@@ -103,10 +103,10 @@
     }
     const id = idYoutube(url);
     if (!id) {
-      return `<div class="${cls}"><div class="player__embreve"><img src="/imagens/video-capa.svg" alt="" loading="lazy"><strong>Vídeo em breve</strong><span>Estamos finalizando este vídeo.</span></div></div>`;
+      return `<div class="${cls}"><div class="player__embreve${capa ? ' player__embreve--capa' : ''}"><img src="${esc(capa ? urlSegura(capa) : '/imagens/video-capa.svg')}" alt="" loading="lazy"><strong>Vídeo em breve</strong><span>${capa ? 'Prévia do vídeo' : 'Estamos finalizando este vídeo.'}</span></div></div>`;
     }
     return `<div class="${cls}"><button class="player__capa" type="button" data-yt="${esc(id)}" data-titulo="${esc(titulo)}" aria-label="Assistir ao vídeo: ${esc(titulo)}">
-      <img src="https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg" alt="" loading="lazy"><span class="player__play">${ICONE_PLAY}</span></button></div>`;
+      <img src="${esc(capa ? urlSegura(capa) : `https://i.ytimg.com/vi/${id}/hqdefault.jpg`)}" alt="" loading="lazy"><span class="player__play">${ICONE_PLAY}</span></button></div>`;
   }
 
   function tocarVideo(botao) {
@@ -196,7 +196,7 @@
       };
     });
     const fotos = lista(b.fotos).filter((f) => f && f.imagem).map((f) => ({ imagem: urlSegura(f.imagem), titulo: String(f.titulo || ''), categoria: String(f.categoria || 'Outros') })).filter((f) => f.imagem);
-    const videos = lista(b.videos).filter((v) => v && v.titulo).map((v) => ({ titulo: String(v.titulo), descricao: String(v.descricao || ''), youtube: String(v.video || v.youtube || ''), capa: urlSegura(v.capa), categoria: String(v.categoria || 'Outros'), formato: v.formato || '' }));
+    const videos = lista(b.videos).filter((v) => v && v.titulo).map((v) => ({ titulo: String(v.titulo), descricao: String(v.descricao || ''), youtube: String(v.video || v.youtube || ''), capa: urlSegura(v.capa), categoria: String(v.categoria || 'Outros'), formato: v.formato || '', servico: String(v.servico || ''), duracao: String(v.duracao || '') }));
     return { loja, textos, catalogos, produtos, fotos, videos };
   }
 
@@ -327,11 +327,21 @@
     </article>`;
   }
 
-  function cartaoVideo(v) {
+  // Cartão de vídeo com legenda: estilo, preço, descrição e botão de pedido
+  function cartaoVideo(v, i) {
     const vertical = ehVertical(v.youtube, v.formato);
+    const c = v.servico ? acharServico(v.servico) : null;
+    const idx = E.dados.videos.indexOf(v);
+    const fichas = [v.duracao && `${v.duracao}`, vertical ? 'Em pé 9:16' : 'Deitado 16:9', 'Com som'].filter(Boolean);
     return `<article class="video ${vertical ? '' : 'video--horizontal'}">
       ${playerHTML(v.youtube, v.titulo, v.formato, v.capa)}
-      <div class="video__info"><h3>${esc(v.titulo)}</h3>${v.descricao ? `<p>${esc(v.descricao)}</p>` : ''}</div>
+      <div class="video__info">
+        ${c ? `<div class="video__preco"><span class="video__estilo">${esc(v.categoria)}</span><strong>${c.preco ? reais(c.preco) : 'Sob consulta'}</strong>${c.preco ? `<span>por ${esc(c.unidade)}</span>` : ''}</div>` : ''}
+        <h3>${esc(v.titulo)}</h3>
+        ${v.descricao ? `<p>${esc(v.descricao)}</p>` : ''}
+        <ul class="video__fichas">${fichas.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
+        ${c ? `<button class="btn btn--primario btn--peq btn--bloco" type="button" data-quero="${idx}">Quero um vídeo assim</button>` : ''}
+      </div>
     </article>`;
   }
 
@@ -362,7 +372,7 @@
             <h1>${esc(textos.heroTitulo)} ${textos.heroDestaque ? `<span>${esc(textos.heroDestaque)}</span>` : ''}</h1>
             <p class="hero__sub">${esc(loja.descricao)}</p>
             <div class="hero__acoes">
-              <a class="btn btn--primario" href="#catalogos">Escolher vídeos e fotos</a>
+              <a class="btn btn--primario" href="#catalogos">Escolher meu vídeo</a>
               <a class="btn btn--contorno" href="#videos">Ver exemplos</a>
             </div>
           </div>
@@ -370,14 +380,18 @@
             <a class="porta" href="#catalogos">
               ${capaServ ? `<img src="${esc(capaServ)}" alt="" loading="lazy">` : ''}
               <strong>Vídeos e fotos com IA</strong>
-              <span>${precos.length ? esc(precos.map((c) => `${c.unidadePlural[0].toUpperCase() + c.unidadePlural.slice(1)} a partir de ${reais(menorPreco(c))}`).join(' · ')) : 'Você escolhe quantos vídeos e fotos quer.'}</span>
+              <span>${precos.length ? `A partir de ${reais(Math.min(...precos.map(menorPreco)))} por ${esc(precos[0].unidade)}. Você escolhe o estilo e quantos quer.` : 'Você escolhe quantos vídeos e fotos quer.'}</span>
               <em>Montar meu pedido →</em>
             </a>
             ${produtos.length ? `<a class="porta porta--loja" href="#loja">
               <strong>Loja Dry Fit</strong>
               <span>Também vendo camisas e shorts Dry Fit para treino e dia a dia.</span>
               <em>Ver a loja →</em>
-            </a>` : ''}
+            </a>` : `<a class="porta porta--loja" href="#videos">
+              <strong>Veja os exemplos</strong>
+              <span>Vídeos reais de calças jeans com modelo de IA, com preço e descrição de cada estilo.</span>
+              <em>Assistir agora →</em>
+            </a>`}
           </div>
         </div>
       </div>
@@ -391,7 +405,7 @@
 
       ${destaqueVideos.length ? `<div class="secao" style="padding-top:0">
         <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Exemplos</span><h2>Vídeos feitos com IA</h2></div><a class="ver-tudo" href="#videos">Ver todos →</a></div>
-        <div class="grade-videos">${destaqueVideos.slice(0, 3).map(cartaoVideo).join('')}</div>
+        <div class="grade-videos">${destaqueVideos.slice(0, 3).map((v) => cartaoVideo(v)).join('')}</div>
       </div>` : ''}
 
       ${catalogos.length ? `<div class="secao" style="padding-top:0">
@@ -420,10 +434,15 @@
     const lista = catalogos.filter((c) => E.filtro.catalogos === 'Todos' || c.categoria === E.filtro.catalogos);
     $('#aba-catalogos').innerHTML = `<div class="secao secao--estreita">
       <div class="cabeca"><span class="sobretitulo">Catálogo</span><h2>Vídeos e fotos com IA</h2>
-        <p>Escolha quantos vídeos e fotos você quer e o formato de cada um. O preço aparece na hora e fica mais barato quanto mais você leva.</p></div>
+        <p>Dois estilos de vídeo com modelo de IA vestindo as roupas da sua loja. Escolha o estilo e a quantidade: o valor aparece na hora.</p></div>
       ${filtrosHTML('catalogos', categoriasDe(catalogos, 'categoria'))}
       ${lista.length ? `<div class="grade grade--servicos">${lista.map(cartaoServico).join('')}</div>`
         : `<div class="vazio"><strong>Nenhum serviço cadastrado ainda</strong><span>Em breve novidades por aqui.</span></div>`}
+      ${lista.filter((c) => E.dados.videos.some((v) => v.servico === c.id)).map((c) => `
+        <div class="exemplos">
+          <div class="linha-titulo"><div class="cabeca" style="margin:0"><span class="sobretitulo">Exemplos · ${c.preco ? `${reais(c.preco)} por ${esc(c.unidade)}` : 'sob consulta'}</span><h2>${esc(c.nome)}</h2></div></div>
+          <div class="grade-videos">${E.dados.videos.filter((v) => v.servico === c.id).map((v) => cartaoVideo(v)).join('')}</div>
+        </div>`).join('')}
       ${textos.avisoIA ? `<p class="aviso-ia">${esc(textos.avisoIA)}</p>` : ''}
     </div>`;
     iniciarConfigs($('#aba-catalogos'));
@@ -435,7 +454,7 @@
   function renderFotos() {
     const lista = fotosFiltradas();
     $('#aba-fotos').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Exemplos</span><h2>Fotos com IA</h2><p>Fotos com modelos criados por inteligência artificial vestindo roupas de lojas. Toque em uma foto para ampliar.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Exemplos</span><h2>Imagens com IA</h2><p>Cenas dos vídeos com modelos criadas por inteligência artificial vestindo roupas de lojas. Toque para ampliar.</p></div>
       ${filtrosHTML('fotos', categoriasDe(E.dados.fotos, 'categoria'))}
       ${lista.length ? `<div class="galeria">${lista.map((f, i) => `<button class="galeria__item" type="button" data-foto="${i}" aria-label="Ampliar foto: ${esc(f.titulo || 'sem título')}">
           <img src="${esc(f.imagem)}" alt="${esc(f.titulo)}" loading="lazy">${f.titulo ? `<span>${esc(f.titulo)}</span>` : ''}</button>`).join('')}</div>`
@@ -446,9 +465,9 @@
   function renderVideos() {
     const lista = E.dados.videos.filter((v) => E.filtro.videos === 'Todos' || v.categoria === E.filtro.videos);
     $('#aba-videos').innerHTML = `<div class="secao secao--estreita">
-      <div class="cabeca"><span class="sobretitulo">Exemplos</span><h2>Vídeos com IA</h2><p>Vídeos demonstrativos com modelos de IA vestindo as peças: caimento, movimento e detalhes, prontos para anúncio.</p></div>
+      <div class="cabeca"><span class="sobretitulo">Exemplos reais</span><h2>Vídeos com IA</h2><p>Escolha o estilo que combina com a sua loja. Cada vídeo mostra o preço e o que está incluído. Toque para assistir com som.</p></div>
       ${filtrosHTML('videos', categoriasDe(E.dados.videos, 'categoria'))}
-      ${lista.length ? `<div class="grade-videos">${lista.map(cartaoVideo).join('')}</div>`
+      ${lista.length ? `<div class="grade-videos">${lista.map((v) => cartaoVideo(v)).join('')}</div>`
         : `<div class="vazio"><strong>Nenhum vídeo nesta categoria</strong><span>Escolha outra categoria acima.</span></div>`}
     </div>`;
   }
@@ -503,7 +522,7 @@
     const { loja } = E.dados;
     const insta = String(loja.instagram || '').replace(/^@/, '').trim();
     $('#rodape').innerHTML = `<div class="rodape__in">
-        <div><h3>${esc(loja.nome)}</h3><p>${esc(loja.descricao)}</p></div>
+        <div><picture class="rodape__logo"><source srcset="/imagens/logo/logo-a-horizontal-escuro.svg" media="(prefers-color-scheme: dark)"><img src="/imagens/logo/logo-a-horizontal-claro.svg" alt="${esc(loja.nome)}" width="240" height="73"></picture><p>${esc(loja.descricao)}</p></div>
         <div><h3>Contato</h3><ul>
           ${loja.whatsapp ? `<li><a href="${esc(linkZap('Olá! Vim pelo site.'))}" target="_blank" rel="noopener">WhatsApp: ${esc(formatarFone(loja.whatsapp))}</a></li>` : ''}
           ${insta ? `<li><a href="https://instagram.com/${esc(encodeURIComponent(insta))}" target="_blank" rel="noopener">Instagram: @${esc(insta)}</a></li>` : ''}
@@ -781,7 +800,7 @@
     pularContador();
   }
   const adicionarProduto = (id, cor, tamanho, qtd) => adicionarItem({ tipo: 'produto', id, cor, tamanho, qtd });
-  const adicionarServico = (id, opcao, qtd) => adicionarItem({ tipo: 'servico', id, opcao, qtd });
+  const adicionarServico = (id, opcao, qtd, rotulo = '') => adicionarItem({ tipo: 'servico', id, opcao, qtd, rotulo });
 
   // Remove do pedido itens que não existem mais no catálogo
   function limparCarrinhoInvalido() {
@@ -851,7 +870,7 @@
       '*CLIENTE*',
       `Nome: ${cliente.nome}`,
     ];
-    if (cliente.cidade) L.push(`Cidade / loja: ${cliente.cidade}`);
+    if (cliente.cidade) L.push(`Loja: ${cliente.cidade}`);
 
     if (servs.length) {
       L.push('', '*VÍDEOS E FOTOS COM IA*');
@@ -860,7 +879,7 @@
         const v = valorItem(i);
         if (v.total && c.preco) economia += c.preco * i.qtd - v.total;
         L.push(`${++n}) ${c.nome}`);
-        if (i.opcao) L.push(`    Formato: ${i.opcao}`);
+        if (i.opcao) L.push(`    ${i.rotulo || 'Formato'}: ${i.opcao}`);
         L.push(v.total
           ? `    Quantidade: ${nomeQtd(c, i.qtd)} × ${reais(v.unit)}`
           : `    Quantidade: ${nomeQtd(c, i.qtd)}`);
@@ -927,9 +946,9 @@
     const corpo = $('#gavetaCorpo');
     if (!E.carrinho.length) {
       corpo.innerHTML = `<div class="vazio"><strong>Seu pedido está vazio</strong>
-        <span>Escolha quantos vídeos e fotos com IA você quer, ou peças da Loja Dry Fit.</span>
-        <a class="btn btn--primario" href="#catalogos" data-fechar-gaveta>Escolher vídeos e fotos</a>
-        <a class="btn btn--contorno" href="#loja" data-fechar-gaveta>Ver Loja Dry Fit</a></div>`;
+        <span>Escolha o estilo do vídeo e quantos você quer.</span>
+        <a class="btn btn--primario" href="#catalogos" data-fechar-gaveta>Escolher vídeos</a>
+        <a class="btn btn--contorno" href="#videos" data-fechar-gaveta>Ver exemplos</a></div>`;
       return;
     }
     const t = totais();
@@ -951,7 +970,7 @@
       <form class="form-pedido" id="formPedido" novalidate>
         <label><div>Seu nome</div><input class="campo" name="nome" autocomplete="name" required maxlength="80" value="${esc(cliente.nome)}"></label>
         <span class="erro-campo" id="erroNome" hidden>Digite seu nome para enviarmos o pedido.</span>
-        <label><div>Cidade ${servs.length ? '/ nome da loja ' : ''}<small>(opcional)</small></div><input class="campo" name="cidade" autocomplete="address-level2" maxlength="80" value="${esc(cliente.cidade)}"></label>
+        <label><div>Nome da sua loja <small>(opcional)</small></div><input class="campo" name="cidade" autocomplete="organization" maxlength="80" value="${esc(cliente.cidade)}"></label>
         <label><div>Observações <small>(opcional)</small></div><textarea class="campo" name="obs" maxlength="500" placeholder="${servs.length ? 'Ex.: quero vídeos para a coleção de jeans' : 'Ex.: prefiro retirar pessoalmente'}"></textarea></label>
         <button class="btn btn--zap btn--bloco" type="submit">
           <svg viewBox="0 0 32 32" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3z"/></svg>
@@ -1031,7 +1050,7 @@
     const aviso = $('#avisoInstalar');
     const btn = $('#btnInstalar');
     if (E.instalarEvento) {
-      $('#instalarDica').textContent = 'Acesso rápido ao catálogo e à loja, direto da tela inicial.';
+      $('#instalarDica').textContent = 'Acesso rápido ao catálogo de vídeos, direto da tela inicial.';
       btn.textContent = 'Instalar';
       btn.dataset.modo = 'prompt';
     } else if (ehIOS()) {
@@ -1088,12 +1107,21 @@
         atualizarConfig(box);
         return;
       }
+      if ((el = alvo.closest('[data-quero]'))) {
+        const v = E.dados.videos[Number(el.dataset.quero)];
+        const c = v && acharServico(v.servico);
+        if (c) {
+          adicionarServico(c.id, `igual ao exemplo "${v.titulo}"`, 1, 'Estilo');
+          avisar(`Adicionado ao pedido: 1 ${c.unidade} ${v.categoria} (${v.titulo})`);
+        }
+        return;
+      }
       if ((el = alvo.closest('[data-config-adicionar]'))) {
         const box = el.closest('[data-config]');
         const c = acharServico(box.dataset.config);
         const qtd = lerQtdConfig(box);
         const sel = $('[data-config-opcao]', box);
-        adicionarServico(c.id, sel ? sel.value : '', qtd);
+        adicionarServico(c.id, sel ? sel.value : '', qtd, c.opcoes ? c.opcoes.nome : '');
         avisar(`Adicionado ao pedido: ${nomeQtd(c, qtd)}`);
         if (box.closest('#modal')) fecharModal();
         return;
