@@ -17,19 +17,19 @@
   ],
   "icons": [
     {
-      "src": "/icones/icone-192.png",
+      "src": "/icones/icone-192-jc.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icones/icone-512.png",
+      "src": "/icones/icone-512-jc.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icones/icone-maskable-512.png",
+      "src": "/icones/icone-maskable-512-jc.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -41,7 +41,7 @@
       "url": "/#catalogos",
       "icons": [
         {
-          "src": "/icones/icone-192.png",
+          "src": "/icones/icone-192-jc.png",
           "sizes": "192x192"
         }
       ]
@@ -51,7 +51,7 @@
       "url": "/#videos",
       "icons": [
         {
-          "src": "/icones/icone-192.png",
+          "src": "/icones/icone-192-jc.png",
           "sizes": "192x192"
         }
       ]

@@ -1,10 +1,10 @@
 /* Service worker: deixa o site instalável e abrindo mesmo sem internet.
    Ao mudar arquivos do site NÃO precisa mexer aqui: ele sempre busca a versão
    nova quando há internet. Só troque a VERSAO se quiser apagar o cache antigo. */
-const VERSAO = 'site-v2';
+const VERSAO = 'site-v5';
 const BASE = [
   '/', '/index.html', '/css/estilo.css', '/js/app.js', '/dados/catalogo.json',
-  '/manifest.webmanifest', '/icones/favicon.svg', '/icones/icone-192.png', '/imagens/video-capa.svg',
+  '/manifest.webmanifest', '/icones/favicon-jc.svg', '/icones/icone-192-jc.png', '/imagens/video-capa.svg',
 ];
 
 self.addEventListener('install', (e) => {
